@@ -1,4 +1,4 @@
-namespace SieuThiMini.Models
+namespace WebApplication1.Models
 {
 	public class NhanVien
 	{
