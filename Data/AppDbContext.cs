@@ -9,6 +9,10 @@ namespace WebApplication1.Data
             : base(options) { }
         public DbSet<Sanpham> SanPhams { get; set; }
         public DbSet<Danhmuc> DanhMucs { get; set; }
-
+        public DbSet<NhanVien> NhanViens { get; set; }
+        public DbSet<DonHang> DonHangs { get; set; }
+        public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
+        public DbSet<HoaDon> HoaDons { get; set; }
+        public DbSet<KhuyenMai> KhuyenMais { get; set; }
     }
 }
