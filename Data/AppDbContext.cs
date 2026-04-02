@@ -14,5 +14,6 @@ namespace WebApplication1.Data
         public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
         public DbSet<HoaDon> HoaDons { get; set; }
         public DbSet<KhuyenMai> KhuyenMais { get; set; }
+        public DbSet<TonKho> TonKhos { get; set; }
     }
 }
