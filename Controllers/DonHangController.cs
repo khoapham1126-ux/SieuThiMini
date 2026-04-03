@@ -22,5 +22,13 @@ namespace WebApplication1.Controllers
         {
             return await _context.DonHangs.ToListAsync();
         }
+        // POST
+        [HttpPost]
+        public async Task<ActionResult<DonHang>> CreateDonHang(DonHang donHang)
+        {
+            _context.DonHangs.Add(donHang);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetDonHangs), new { id = donHang.Id }, donHang);
+        }
     }
 }
