@@ -32,5 +32,25 @@ namespace WebApplication1.Controllers
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetAll), new { id = sanpham.maSanPham }, sanpham);
         }
+        // GET: api/sanpham/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var sanpham = await _context.SanPhams.FindAsync(id);
+            if (sanpham == null)
+                return NotFound(new { message = $"Không tìm thấy sản phẩm với ID = {id}" });
+            return Ok(sanpham);
+        }
+
+        // GET: api/sanpham/mavach/{mavach}
+        [HttpGet("mavach/{mavach}")]
+        public async Task<IActionResult> GetByMaVach(string mavach)
+        {
+            var sanpham = await _context.SanPhams
+                .FirstOrDefaultAsync(s => s.maVach == mavach);
+            if (sanpham == null)
+                return NotFound(new { message = $"Không tìm thấy sản phẩm với mã vạch: {mavach}" });
+            return Ok(sanpham);
+        }
     }
 }
