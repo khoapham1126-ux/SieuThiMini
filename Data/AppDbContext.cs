@@ -23,5 +23,6 @@ namespace WebApplication1.Data
         public DbSet<CanhBao> CanhBaos { get; set; }
         public DbSet<LichLamViec> LichLamViecs { get; set; }
         public DbSet<BaoCao> BaoCaos { get; set; }
+       
     }
 }
