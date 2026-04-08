@@ -29,5 +29,22 @@ namespace WebApplication1.Controllers
             await _context.SaveChangesAsync();
             return Ok(khachHang);
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var kh = await _context.KhachHangs.FindAsync(id);
+            if (kh == null) return NotFound(new { message = "Không tìm thấy khách hàng!" });
+            return Ok(kh);
+        }
+
+        
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, KhachHang khachHang)
+        {
+            if (id != khachHang.Id) return BadRequest();
+            _context.Entry(khachHang).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Cập nhật khách hàng thành công!" });
+        }
     }
 }
