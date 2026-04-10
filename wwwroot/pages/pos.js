@@ -18,6 +18,14 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ============================================================
+// Lấy NhanVienId từ localStorage (lưu lúc đăng nhập)
+// ============================================================
+function getNhanVienId() {
+    const id = localStorage.getItem("staffId");
+    return id ? Number(id) : 1; // fallback = 1 nếu chưa lưu
+}
+
+// ============================================================
 // Tải danh sách khách hàng vào select
 // ============================================================
 async function loadCustomers() {
@@ -85,7 +93,6 @@ async function searchByBarcode() {
 function addToCart() {
     if (!currentProduct) return;
 
-    // Kiểm tra xem sản phẩm đã có trong giỏ chưa
     const existing = cart.find(item => item.sanPham.maSanPham === currentProduct.maSanPham);
     if (existing) {
         existing.soLuong += 1;
@@ -184,9 +191,15 @@ function updateTotal() {
 
 // ============================================================
 // Thanh toán
-// Luồng: Tạo đơn hàng (POST /api/DonHang) →
-//         Trừ kho từng sản phẩm (PUT /api/TonKho/tru) →
-//         Xoá giỏ
+// Luồng đúng theo đề bài:
+//   1. POST /api/DonHang              → tạo đơn hàng (trạng thái ChoThanhToan)
+//   2. POST /api/DonHang/{id}/chitiet → thêm từng sản phẩm vào đơn
+//   3. PUT  /api/DonHang/{id}/thanhtoan → cập nhật trạng thái sang DaThanhToan
+//   4. PUT  /api/TonKho/tru           → trừ kho từng sản phẩm
+//
+// Lý do bước 3 dùng PUT:
+//   Vì thanh toán là THAY ĐỔI trạng thái của đơn hàng đã tồn tại
+//   (ChoThanhToan → DaThanhToan), không tạo mới → đúng chuẩn REST dùng PUT
 // ============================================================
 async function checkout() {
     if (cart.length === 0) return;
@@ -195,24 +208,20 @@ async function checkout() {
     alertBox.classList.add("d-none");
 
     const customerId = document.getElementById("customerSelect").value;
-
-    // Tổng tiền
     const tongTien = cart.reduce((sum, item) => sum + item.sanPham.giaBan * item.soLuong, 0);
 
-    const donHangBody = {
-        NgayTao: new Date().toISOString(),
-        TongTien: tongTien,
-        TrangThai: "DaThanhToan",
-        KhachHangId: customerId ? Number(customerId) : 0,
-        NhanVienId: 1 // Mặc định, có thể lấy từ localStorage nếu cần
-    };
-
     try {
-        // 1. Tạo đơn hàng
+        // ── Bước 1: Tạo đơn hàng ──────────────────────────────
         const donHangRes = await fetch("/api/DonHang", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(donHangBody)
+            body: JSON.stringify({
+                NgayTao: new Date().toISOString(),
+                TongTien: tongTien,
+                TrangThai: "ChoThanhToan",          // ban đầu chờ thanh toán
+                KhachHangId: customerId ? Number(customerId) : 0,
+                NhanVienId: getNhanVienId()          // ✅ lấy từ localStorage
+            })
         });
 
         if (!donHangRes.ok) {
@@ -222,21 +231,32 @@ async function checkout() {
 
         const donHang = await donHangRes.json();
 
-        // 2. Thêm chi tiết đơn hàng & trừ kho
-        const chiTietPromises = cart.map(item =>
-            fetch("/api/ChiTietDonHang", {
+        // ── Bước 2: Thêm chi tiết đơn hàng ───────────────────
+        // POST /api/DonHang/{id}/chitiet  ✅ đúng endpoint đề bài
+        await Promise.all(cart.map(item =>
+            fetch(`/api/DonHang/${donHang.id}/chitiet`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     SoLuong: item.soLuong,
                     DonGia: item.sanPham.giaBan,
-                    DonHangId: donHang.id,
                     SanPhamId: item.sanPham.maSanPham
                 })
             })
-        );
+        ));
 
-        const truKhoPromises = cart.map(item =>
+        // ── Bước 3: Cập nhật trạng thái thanh toán ───────────
+        // PUT /api/DonHang/{id}/thanhtoan  ✅ đúng endpoint đề bài
+        const thanhToanRes = await fetch(`/api/DonHang/${donHang.id}/thanhtoan`, {
+            method: "PUT"
+        });
+
+        if (!thanhToanRes.ok) {
+            throw new Error("Cập nhật trạng thái thanh toán thất bại");
+        }
+
+        // ── Bước 4: Trừ kho ──────────────────────────────────
+        await Promise.all(cart.map(item =>
             fetch("/api/TonKho/tru", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
@@ -245,19 +265,15 @@ async function checkout() {
                     SoLuong: item.soLuong
                 })
             })
-        );
+        ));
 
-        await Promise.all([...chiTietPromises, ...truKhoPromises]);
-
-        // 3. Thành công - xoá giỏ
+        // ── Thành công ────────────────────────────────────────
         cart = [];
         renderCart();
 
         alertBox.className = "alert alert-success mt-2";
         alertBox.textContent = `✅ Thanh toán thành công! Đơn hàng #${donHang.id} - Tổng: ${formatCurrency(tongTien)}`;
         alertBox.classList.remove("d-none");
-
-        // Ẩn thông báo sau 4 giây
         setTimeout(() => alertBox.classList.add("d-none"), 4000);
 
     } catch (err) {

@@ -1,12 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
 using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class DonHangController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -16,64 +16,63 @@ namespace WebApplication1.Controllers
             _context = context;
         }
 
-        // GET: api/donhang
+        // GET: api/DonHang
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DonHang>>> GetDonHangs()
+        public async Task<IActionResult> GetAll()
         {
-            return await _context.DonHangs.ToListAsync();
+            return Ok(await _context.DonHangs
+                .OrderByDescending(d => d.NgayTao)
+                .ToListAsync());
         }
-        // POST
-        [HttpPost]
-        public async Task<ActionResult<DonHang>> CreateDonHang(DonHang donHang)
+
+        // GET: api/DonHang/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
+            var donHang = await _context.DonHangs.FindAsync(id);
+            if (donHang == null)
+                return NotFound(new { message = "Không tìm thấy đơn hàng!" });
+            return Ok(donHang);
+        }
+
+        // POST: api/DonHang
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] DonHang donHang)
+        {
+            donHang.NgayTao = DateTime.Now;
             _context.DonHangs.Add(donHang);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetDonHangs), new { id = donHang.Id }, donHang);
+            return Ok(donHang);
         }
-        // POST: api/donhang/{id}/chitiet
+
+        // POST: api/DonHang/{id}/chitiet  ✅ Đúng endpoint theo đề bài
         [HttpPost("{id}/chitiet")]
-        public async Task<IActionResult> ThemChiTiet(int id, [FromBody] ChiTietDonHang chiTiet)
+        public async Task<IActionResult> AddChiTiet(int id, [FromBody] ChiTietDonHang chiTiet)
         {
             var donHang = await _context.DonHangs.FindAsync(id);
             if (donHang == null)
-                return NotFound(new { message = "Kh�ng t�m th?y ??n h�ng" });
-
-            var sanpham = await _context.SanPhams.FindAsync(chiTiet.SanPhamId);
-            if (sanpham == null)
-                return NotFound(new { message = "Kh�ng t�m th?y s?n ph?m" });
+                return NotFound(new { message = "Không tìm thấy đơn hàng!" });
 
             chiTiet.DonHangId = id;
-            chiTiet.DonGia = sanpham.giaBan;
             _context.ChiTietDonHangs.Add(chiTiet);
-
-            // C?p nh?t TongTien
-            donHang.TongTien += chiTiet.DonGia * chiTiet.SoLuong;
             await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Th�m chi ti?t ??n h�ng th�nh c�ng", chiTiet });
+            return Ok(chiTiet);
         }
 
-        // PUT: api/donhang/{id}/thanhtoan
+        // PUT: api/DonHang/{id}/thanhtoan  ✅ Đúng endpoint theo đề bài
+        // Lý do dùng PUT: vì đây là CẬP NHẬT trạng thái của đơn hàng đã tồn tại
+        // (từ "ChoThanhToan" → "DaThanhToan"), không phải tạo mới → dùng PUT là đúng REST convention
         [HttpPut("{id}/thanhtoan")]
-        public async Task<IActionResult> ThanhToan(int id, [FromBody] string phuongThucThanhToan)
+        public async Task<IActionResult> ThanhToan(int id)
         {
             var donHang = await _context.DonHangs.FindAsync(id);
             if (donHang == null)
-                return NotFound(new { message = "Kh�ng t�m th?y ??n h�ng" });
+                return NotFound(new { message = "Không tìm thấy đơn hàng!" });
 
             donHang.TrangThai = "DaThanhToan";
-
-            var hoaDon = new HoaDon
-            {
-                DonHangId = id,
-                NgayXuat = DateTime.Now,
-                TongTien = donHang.TongTien,
-                PhuongThucThanhToan = phuongThucThanhToan ?? "TienMat"
-            };
-            _context.HoaDons.Add(hoaDon);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Thanh to�n th�nh c�ng", hoaDon });
+            return Ok(new { message = "Thanh toán thành công!", donHang });
         }
     }
 }

@@ -25,6 +25,7 @@
 
         localStorage.setItem("staffName", data.hoTen || "Nhân viên");
         localStorage.setItem("role", data.vaiTro || "");
+        localStorage.setItem("staffId", data.id || "");   // ✅ Lưu ID để dùng khi tạo đơn hàng
 
         window.location.href = "index.html";
     } catch (error) {
