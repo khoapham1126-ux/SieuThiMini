@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bán hàng - Siêu Thị Mini</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/app.css">
+    <style>
+        .cart-table td, .cart-table th {
+            vertical-align: middle;
+        }
+
+        .product-found {
+            border-left: 4px solid #dc2626;
+        }
+
+        .total-bar {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            border-radius: 14px;
+            color: white;
+        }
+
+        #barcodeInput:focus {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220,38,38,0.15);
+        }
+
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .empty-cart {
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar p-3">
+            <div class="brand mb-4">
+                Siêu Thị Mini
+                <small>Management Dashboard</small>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link active" href="pos.html">Bán hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="tonkho.html">Tồn kho</a></li>
+                <li class="nav-item"><a class="nav-link" href="nhanvien.html">Nhân viên</a></li>
+                <li class="nav-item"><a class="nav-link" href="khachhang.html">Khách hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="nhacc.html">Nhà cung cấp</a></li>
+                <li class="nav-item"><a class="nav-link" href="canhbao.html">Cảnh báo</a></li>
+                <li class="nav-item mt-2"><a class="nav-link text-danger" href="#" onclick="logout()">Đăng xuất</a></li>
+            </ul>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar d-flex justify-content-between align-items-center">
+                <div>
+                    <h5>Bán hàng (POS)</h5>
+                    <div class="text-muted small">Quét mã vạch hoặc tìm sản phẩm để bán</div>
+                </div>
+                <div class="user-chip">
+                    <div class="avatar" id="userAvatar">K</div>
+                    <div>
+                        <div class="small text-muted">Xin chào</div>
+                        <div class="fw-semibold" id="staffName">Nhân viên</div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <div class="row g-3">
+
+                    <!-- CỘT TRÁI: Tìm sản phẩm -->
+                    <div class="col-lg-5">
+                        <div class="card-ui p-4 mb-3">
+                            <h6 class="fw-bold mb-3">Nhập mã vạch sản phẩm</h6>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="barcodeInput"
+                                       placeholder="Quét hoặc nhập mã vạch rồi Enter..."
+                                       autofocus autocomplete="off">
+                                <button class="btn btn-primary" onclick="searchByBarcode()">Tìm</button>
+                            </div>
+                            <div class="text-muted small mt-1">Nhấn <strong>Enter</strong> để tìm nhanh</div>
+                        </div>
+
+                        <!-- Thông tin sản phẩm tìm được -->
+                        <div class="card-ui p-4 d-none" id="productCard">
+                            <h6 class="fw-bold mb-3 text-danger">Sản phẩm tìm thấy</h6>
+                            <div class="product-found p-3 rounded bg-light">
+                                <div class="fw-semibold fs-6" id="productName">---</div>
+                                <div class="text-muted small mb-2">Mã vạch: <span id="productBarcode">---</span></div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-danger fw-bold fs-5" id="productPrice">0 đ</span>
+                                    <button class="btn btn-primary btn-sm" onclick="addToCart()">
+                                        + Thêm vào giỏ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lỗi không tìm thấy -->
+                        <div class="alert alert-danger d-none mt-2" id="productError"></div>
+
+                        <!-- Chọn khách hàng (optional) -->
+                        <div class="card-ui p-4 mt-3">
+                            <h6 class="fw-bold mb-2">Khách hàng (tuỳ chọn)</h6>
+                            <select class="form-select" id="customerSelect">
+                                <option value="">-- Khách lẻ (không cần chọn) --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- CỘT PHẢI: Giỏ hàng -->
+                    <div class="col-lg-7">
+                        <div class="card-ui p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-0">Giỏ hàng</h6>
+                                <button class="btn btn-outline-danger btn-sm" onclick="clearCart()">Xoá giỏ</button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table cart-table align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Sản phẩm</th>
+                                            <th class="text-center">SL</th>
+                                            <th class="text-end">Đơn giá</th>
+                                            <th class="text-end">Thành tiền</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cartTableBody">
+                                        <tr id="emptyCartRow">
+                                            <td colspan="5" class="text-center py-5 empty-cart">
+                                                <div style="font-size:2rem;">🛒</div>
+                                                <div>Giỏ hàng trống</div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Tổng tiền & Thanh toán -->
+                            <div class="total-bar p-4 mt-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="fs-6 opacity-90">Tổng số mặt hàng:</span>
+                                    <span class="fw-bold" id="totalItems">0</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <span class="fs-5 fw-semibold">Tổng tiền:</span>
+                                    <span class="fs-4 fw-bold" id="totalAmount">0 đ</span>
+                                </div>
+                                <button class="btn btn-light w-100 fw-bold text-danger fs-6"
+                                        onclick="checkout()" id="checkoutBtn" disabled>
+                                    Thanh toán
+                                </button>
+                            </div>
+
+                            <div id="checkoutAlert" class="alert d-none mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="pos.js"></script>
+</body>
+</html>
