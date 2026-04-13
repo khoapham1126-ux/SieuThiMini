@@ -24,5 +24,18 @@ namespace WebApplication1.Controllers
                 .OrderByDescending(c => c.ThoiGian)
                 .ToListAsync());
         }
+        // PUT: api/CanhBao/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> CapNhatXuLy(int id, [FromBody] CanhBao updated)
+        {
+            var item = await _context.CanhBaos.FindAsync(id);
+            if (item == null) return NotFound();
+
+            item.DaXuLy = updated.DaXuLy;
+
+            await _context.SaveChangesAsync();
+            return Ok(item);
+        }
     }
+   
 }
