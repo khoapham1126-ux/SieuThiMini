@@ -1,0 +1,49 @@
+﻿document.addEventListener("DOMContentLoaded", async () => {
+    await loadCustomerList();
+    if (typeof renderUserInfo === "function") renderUserInfo();
+
+    const form = document.getElementById("formKhachHang");
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await createCustomer();
+    });
+});
+
+async function loadCustomerList() {
+    try {
+        const res = await fetch("/api/KhachHang");
+        if (res.ok) {
+            const customers = await res.json();
+            const tbody = document.getElementById("listKhachHang");
+            tbody.innerHTML = customers.map(kh => `
+                <tr>
+                    <td>${kh.hoTen}</td>
+                    <td>${kh.soDienThoai}</td>
+                    <td><span class="badge bg-info text-dark">${kh.diemTichLuy}</span></td>
+                </tr>
+            `).join("");
+        }
+    } catch (error) {
+        console.error("Lỗi load khách hàng:", error);
+    }
+}
+
+async function createCustomer() {
+    const tenKH = document.getElementById("tenKH").value;
+    const sdtKH = document.getElementById("sdtKH").value;
+
+    try {
+        const res = await fetch("/api/KhachHang", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ hoTen: tenKH, soDienThoai: sdtKH, diemTichLuy: 0 })
+        });
+
+        if (res.ok) {
+            document.getElementById("formKhachHang").reset();
+            await loadCustomerList();
+        }
+    } catch (error) {
+        console.error("Lỗi thêm khách hàng:", error);
+    }
+}
