@@ -22,10 +22,10 @@ async function loadProviderList() {
 
         tbody.innerHTML = providers.map(ncc => `
             <tr>
-                <td>${ncc.id}</td>
-                <td>${ncc.ten ?? "—"}</td>
-                <td>${ncc.soDienThoai ?? "—"}</td>
-                <td>${ncc.email ?? "—"}</td>
+                <td>${ncc.id ?? ncc.Id ?? "—"}</td>
+                <td>${ncc.ten ?? ncc.Ten ?? "—"}</td>
+                <td>${ncc.soDienThoai ?? ncc.SoDienThoai ?? "—"}</td>
+                <td>${ncc.email ?? ncc.Email ?? "—"}</td>
             </tr>
         `).join("");
     } catch (error) {
