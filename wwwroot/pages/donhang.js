@@ -28,7 +28,7 @@ async function loadOrders() {
 
         const data = await orderRes.json();
         allOrders = data;
-        employeeNameById = buildEmployeeMap(employeeRes ? await employeeRes.json().catch(() => []) : []);
+        employeeNameById = buildEmployeeMap(await readEmployeesSafely(employeeRes));
 
         renderStats(data);
         renderOrders(data);
@@ -88,22 +88,39 @@ function buildEmployeeMap(employees) {
     if (!Array.isArray(employees)) return map;
 
     employees.forEach(nv => {
-        const id = Number(nv.id ?? nv.Id ?? 0);
+        const id = toValidIdOrNull(nv.id ?? nv.Id);
         const name = (nv.hoTen ?? nv.HoTen ?? "").trim();
-        if (id > 0 && name) map.set(id, name);
+        if (id !== null && name) map.set(id, name);
     });
 
     return map;
+}
+
+async function readEmployeesSafely(employeeRes) {
+    if (!employeeRes || !employeeRes.ok) return [];
+    try {
+        return await employeeRes.json();
+    } catch (err) {
+        console.warn("Không đọc được dữ liệu nhân viên từ API:", err);
+        return [];
+    }
 }
 
 function getCashierDisplay(order) {
     const directName = order.nhanVienHoTen ?? order.NhanVienHoTen;
     if (directName) return directName;
 
-    const id = Number(order.nhanVienId ?? order.NhanVienId ?? 0);
-    if (!id) return "---";
+    const id = toValidIdOrNull(order.nhanVienId ?? order.NhanVienId);
+    if (id === null) return "---";
 
     return employeeNameById.get(id) ?? `NV #${id}`;
+}
+
+function toValidIdOrNull(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const id = Number(value);
+    if (!Number.isInteger(id) || id <= 0) return null;
+    return id;
 }
 
 // ============================================================
