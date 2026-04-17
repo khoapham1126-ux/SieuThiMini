@@ -17,7 +17,7 @@ async function loadProviderList() {
             tbody.innerHTML = providers.map(ncc => `
                 <tr>
                     <td>${ncc.id}</td>
-                    <td>${ncc.tenNhaCungCap}</td>
+                    <td>${ncc.ten}</td>
                 </tr>
             `).join("");
         }
@@ -33,7 +33,7 @@ async function createProvider() {
         const res = await fetch("/api/NhaCungCap", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tenNhaCungCap: tenNCC })
+            body: JSON.stringify({ ten: tenNCC })
         });
 
         if (res.ok) {
