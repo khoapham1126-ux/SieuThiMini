@@ -3,6 +3,7 @@
 // ============================================================
 
 let allOrders = []; // Toàn bộ đơn hàng từ API
+let employeeNameById = new Map();
 
 // ============================================================
 // Khởi tạo
@@ -19,11 +20,15 @@ async function loadOrders() {
     const alertBox = document.getElementById("orderAlert");
 
     try {
-        const res = await fetch("/api/DonHang");
-        if (!res.ok) throw new Error("Không tải được danh sách đơn hàng");
+        const [orderRes, employeeRes] = await Promise.all([
+            fetch("/api/DonHang"),
+            fetch("/api/NhanVien").catch(() => null)
+        ]);
+        if (!orderRes.ok) throw new Error("Không tải được danh sách đơn hàng");
 
-        const data = await res.json();
+        const data = await orderRes.json();
         allOrders = data;
+        employeeNameById = buildEmployeeMap(await readEmployeesSafely(employeeRes));
 
         renderStats(data);
         renderOrders(data);
@@ -69,13 +74,53 @@ function renderOrders(orders) {
             <td><span class="fw-semibold text-danger">#${order.id}</span></td>
             <td>${formatDate(order.ngayTao)}</td>
             <td>${order.khachHangId ? `KH #${order.khachHangId}` : '<span class="text-muted">Khách lẻ</span>'}</td>
-            <td>NV #${order.nhanVienId || "---"}</td>
+            <td>${getCashierDisplay(order)}</td>
             <td class="text-end fw-semibold">${formatCurrency(order.tongTien)}</td>
             <td class="text-center">${renderStatusBadge(order.trangThai)}</td>
         </tr>
     `).join("");
 
     filterInfo.textContent = `Hiển thị ${orders.length} / ${allOrders.length} đơn hàng`;
+}
+
+function buildEmployeeMap(employees) {
+    const map = new Map();
+    if (!Array.isArray(employees)) return map;
+
+    employees.forEach(nv => {
+        const id = toValidIdOrNull(nv.id ?? nv.Id);
+        const name = (nv.hoTen ?? nv.HoTen ?? "").trim();
+        if (id !== null && name) map.set(id, name);
+    });
+
+    return map;
+}
+
+async function readEmployeesSafely(employeeRes) {
+    if (!employeeRes || !employeeRes.ok) return [];
+    try {
+        return await employeeRes.json();
+    } catch (err) {
+        console.warn("Không đọc được dữ liệu nhân viên từ API:", err);
+        return [];
+    }
+}
+
+function getCashierDisplay(order) {
+    const directName = order.nhanVienHoTen ?? order.NhanVienHoTen;
+    if (directName) return directName;
+
+    const id = toValidIdOrNull(order.nhanVienId ?? order.NhanVienId);
+    if (id === null) return "---";
+
+    return employeeNameById.get(id) ?? `NV #${id}`;
+}
+
+function toValidIdOrNull(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const id = Number(value);
+    if (!Number.isInteger(id) || id <= 0) return null;
+    return id;
 }
 
 // ============================================================
