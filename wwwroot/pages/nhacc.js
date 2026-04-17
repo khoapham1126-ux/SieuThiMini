@@ -1,31 +1,33 @@
 ﻿document.addEventListener("DOMContentLoaded", async () => {
     await loadProviderList();
+
     if (typeof renderUserInfo === "function") renderUserInfo();
 
-    document.getElementById("formNCC").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        await createProvider();
-    });
+    const form = document.getElementById("formNCC");
+    if (form) {
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            await createProvider();
+        });
+    }
 });
-
 async function loadProviderList() {
     const tbody = document.getElementById("listNCC");
     try {
         const res = await fetch("/api/NhaCungCap");
-        if (!res.ok) throw new Error("Không tải được danh sách");
-        const providers = await res.json();
+        console.log("status =", res.status);
 
-        if (!providers || providers.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Chưa có nhà cung cấp</td></tr>`;
-            return;
-        }
+        const providers = await res.json();
+        console.log("RAW providers =", providers);
+        console.log("First item =", providers?.[0]);
+        console.log("Keys =", providers?.[0] ? Object.keys(providers[0]) : []);
 
         tbody.innerHTML = providers.map(ncc => `
             <tr>
                 <td>${ncc.id}</td>
-                <td>${ncc.ten ?? "—"}</td>
-                <td>${ncc.soDienThoai ?? "—"}</td>
-                <td>${ncc.email ?? "—"}</td>
+                <td>${ncc.ten}</td>
+                <td>${ncc.soDienThoai}</td>
+                <td>${ncc.email}</td>
             </tr>
         `).join("");
     } catch (error) {
@@ -51,7 +53,7 @@ async function createProvider() {
         const res = await fetch("/api/NhaCungCap", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body);
+            body: JSON.stringify(body)
         });
 
         if (res.ok) {

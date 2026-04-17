@@ -1,19 +1,9 @@
-﻿// ============================================================
-// donhang.js - Lịch sử đơn hàng - Nguyễn An
-// ============================================================
+﻿let allOrders = [];
 
-let allOrders = []; // Toàn bộ đơn hàng từ API
-
-// ============================================================
-// Khởi tạo
-// ============================================================
 document.addEventListener("DOMContentLoaded", () => {
     loadOrders();
 });
 
-// ============================================================
-// Tải danh sách đơn hàng
-// ============================================================
 async function loadOrders() {
     const tbody = document.getElementById("orderTableBody");
     const alertBox = document.getElementById("orderAlert");
@@ -34,9 +24,6 @@ async function loadOrders() {
     }
 }
 
-// ============================================================
-// Render thống kê nhanh
-// ============================================================
 function renderStats(orders) {
     const total = orders.length;
     const paid = orders.filter(o => o.trangThai === "DaThanhToan").length;
@@ -51,9 +38,6 @@ function renderStats(orders) {
     document.getElementById("statRevenue").textContent = formatCurrency(revenue);
 }
 
-// ============================================================
-// Render bảng đơn hàng
-// ============================================================
 function renderOrders(orders) {
     const tbody = document.getElementById("orderTableBody");
     const filterInfo = document.getElementById("filterInfo");
@@ -68,8 +52,8 @@ function renderOrders(orders) {
         <tr>
             <td><span class="fw-semibold text-danger">#${order.id}</span></td>
             <td>${formatDate(order.ngayTao)}</td>
-            <td>${order.khachHangId ? `KH #${order.khachHangId}` : '<span class="text-muted">Khách lẻ</span>'}</td>
-            <td>NV #${order.nhanVienId || "---"}</td>
+            <td>${order.khachHangTen || "Khách lẻ"}</td>
+            <td>${order.nhanVienTen || "Nhân viên"}</td>
             <td class="text-end fw-semibold">${formatCurrency(order.tongTien)}</td>
             <td class="text-center">${renderStatusBadge(order.trangThai)}</td>
         </tr>
@@ -78,26 +62,20 @@ function renderOrders(orders) {
     filterInfo.textContent = `Hiển thị ${orders.length} / ${allOrders.length} đơn hàng`;
 }
 
-// ============================================================
-// Render badge trạng thái
-// ============================================================
 function renderStatusBadge(status) {
     const map = {
-        "DaThanhToan":  { label: "Đã thanh toán", cls: "badge-paid" },
+        "DaThanhToan": { label: "Đã thanh toán", cls: "badge-paid" },
         "ChoThanhToan": { label: "Chờ thanh toán", cls: "badge-pending" },
-        "DaHuy":        { label: "Đã huỷ",         cls: "badge-cancelled" },
+        "DaHuy": { label: "Đã huỷ", cls: "badge-cancelled" },
     };
     const info = map[status] || { label: status || "Không rõ", cls: "bg-secondary" };
     return `<span class="badge ${info.cls}">${info.label}</span>`;
 }
 
-// ============================================================
-// Lọc đơn hàng
-// ============================================================
 function filterOrders() {
     const searchVal = document.getElementById("searchInput").value.trim().toLowerCase();
     const statusVal = document.getElementById("statusFilter").value;
-    const dateVal = document.getElementById("dateFilter").value; // yyyy-mm-dd
+    const dateVal = document.getElementById("dateFilter").value;
 
     let filtered = allOrders;
 
@@ -113,7 +91,7 @@ function filterOrders() {
         filtered = filtered.filter(o => {
             if (!o.ngayTao) return false;
             const d = new Date(o.ngayTao);
-            const ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+            const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
             return ymd === dateVal;
         });
     }
@@ -121,9 +99,6 @@ function filterOrders() {
     renderOrders(filtered);
 }
 
-// ============================================================
-// Xoá bộ lọc
-// ============================================================
 function resetFilter() {
     document.getElementById("searchInput").value = "";
     document.getElementById("statusFilter").value = "";
@@ -131,16 +106,10 @@ function resetFilter() {
     renderOrders(allOrders);
 }
 
-// ============================================================
-// Tiện ích: Format tiền tệ
-// ============================================================
 function formatCurrency(amount) {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount || 0);
 }
 
-// ============================================================
-// Tiện ích: Format ngày giờ
-// ============================================================
 function formatDate(dateStr) {
     if (!dateStr) return "---";
     const d = new Date(dateStr);

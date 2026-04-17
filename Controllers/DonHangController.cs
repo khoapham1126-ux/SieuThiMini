@@ -20,9 +20,30 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            return Ok(await _context.DonHangs
+            var data = await _context.DonHangs
                 .OrderByDescending(d => d.NgayTao)
-                .ToListAsync());
+                .Select(d => new
+                {
+                    d.Id,
+                    d.NgayTao,
+                    d.TongTien,
+                    d.TrangThai,
+                    d.KhachHangId,
+                    d.NhanVienId,
+                    NhanVienTen = _context.NhanViens
+                        .Where(n => n.Id == d.NhanVienId)
+                        .Select(n => n.HoTen)
+                        .FirstOrDefault(),
+                    KhachHangTen = d.KhachHangId == 0
+                        ? null
+                        : _context.KhachHangs
+                            .Where(k => k.Id == d.KhachHangId)
+                            .Select(k => k.HoTen)
+                            .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            return Ok(data);
         }
 
         // GET: api/DonHang/5
@@ -45,7 +66,7 @@ namespace WebApplication1.Controllers
             return Ok(donHang);
         }
 
-        // POST: api/DonHang/{id}/chitiet  ✅ Đúng endpoint theo đề bài
+        // POST: api/DonHang/{id}/chitiet
         [HttpPost("{id}/chitiet")]
         public async Task<IActionResult> AddChiTiet(int id, [FromBody] ChiTietDonHang chiTiet)
         {
@@ -59,9 +80,7 @@ namespace WebApplication1.Controllers
             return Ok(chiTiet);
         }
 
-        // PUT: api/DonHang/{id}/thanhtoan  ✅ Đúng endpoint theo đề bài
-        // Lý do dùng PUT: vì đây là CẬP NHẬT trạng thái của đơn hàng đã tồn tại
-        // (từ "ChoThanhToan" → "DaThanhToan"), không phải tạo mới → dùng PUT là đúng REST convention
+        // PUT: api/DonHang/{id}/thanhtoan
         [HttpPut("{id}/thanhtoan")]
         public async Task<IActionResult> ThanhToan(int id)
         {

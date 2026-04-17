@@ -23,6 +23,7 @@ namespace WebApplication1.Controllers
             return Ok(new
             {
                 message = "Đăng nhập thành công",
+                id = nhanvien.Id,
                 hoTen = nhanvien.HoTen,
                 vaiTro = nhanvien.VaiTro
             });

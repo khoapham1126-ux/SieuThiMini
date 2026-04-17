@@ -22,7 +22,6 @@
         if (!response.ok) {
             throw new Error(data.message || "Sai username hoặc mật khẩu");
         }
-
         localStorage.setItem("staffName", data.hoTen || "Nhân viên");
         localStorage.setItem("role", data.vaiTro || "");
         localStorage.setItem("staffId", data.id || "");   // ✅ Lưu ID để dùng khi tạo đơn hàng
