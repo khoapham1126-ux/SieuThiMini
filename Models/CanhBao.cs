@@ -8,5 +8,6 @@ namespace WebApplication1.Models
         public DateTime ThoiGian { get; set; }
         public bool DaXuLy { get; set; }
         public int SanPhamId { get; set; }
+        public Sanpham? SanPham { get; set; }
     }
 }

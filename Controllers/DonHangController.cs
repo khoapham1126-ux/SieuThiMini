@@ -88,10 +88,32 @@ namespace WebApplication1.Controllers
             if (donHang == null)
                 return NotFound(new { message = "Không tìm thấy đơn hàng!" });
 
+            if (donHang.TrangThai == "DaThanhToan")
+                return Ok(new { message = "Đơn hàng đã được thanh toán!", donHang });
+
             donHang.TrangThai = "DaThanhToan";
+
+            // Cộng điểm cho khách hàng nếu có
+            if (donHang.KhachHangId != 0)
+            {
+                var khachHang = await _context.KhachHangs.FindAsync(donHang.KhachHangId);
+                if (khachHang != null)
+                {
+                    int diemCong = (int)(donHang.TongTien / 10000); // 10k = 1 điểm
+                    if (diemCong > 0)
+                    {
+                        khachHang.DiemTichLuy += diemCong;
+                    }
+                }
+            }
+
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Thanh toán thành công!", donHang });
+            return Ok(new
+            {
+                message = "Thanh toán thành công!",
+                donHang
+            });
         }
     }
 }

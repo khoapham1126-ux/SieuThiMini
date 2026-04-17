@@ -17,11 +17,13 @@ namespace WebApplication1.Controllers
             _context = context;
         }
 
-        // GET: api/tonkho
         [HttpGet(Name = "GetTonKho")]
         public async Task<IEnumerable<TonKho>> Get()
         {
-            return await _context.TonKhos.ToListAsync();
+            return await _context.TonKhos
+                .Include(t => t.SanPham)
+                .Include(t => t.LoHang)
+                .ToListAsync();
         }
 
         // POST: api/tonkho
@@ -44,35 +46,67 @@ namespace WebApplication1.Controllers
             return Ok(new { message = "Cập nhật tồn kho thành công" });
         }
 
-        // PUT: api/tonkho/tru
         [HttpPut("tru")]
         public async Task<IActionResult> TruKho([FromBody] TonKho tonkho)
         {
-            var existing = await _context.TonKhos
-                .FirstOrDefaultAsync(t => t.SanPhamId == tonkho.SanPhamId);
+            if (tonkho.SoLuong <= 0)
+                return BadRequest(new { message = "Số lượng trừ phải lớn hơn 0" });
 
-            if (existing == null)
+            var tonKhos = await _context.TonKhos
+                .Include(t => t.SanPham)
+                .Where(t => t.SanPhamId == tonkho.SanPhamId && t.SoLuong > 0)
+                .OrderBy(t => t.LoHangId)
+                .ToListAsync();
+
+            if (!tonKhos.Any())
                 return NotFound(new { message = "Không tìm thấy sản phẩm trong kho" });
 
-            // Trừ số lượng
-            existing.SoLuong -= tonkho.SoLuong;
+            int soLuongCanTru = tonkho.SoLuong;
+            int tongTon = tonKhos.Sum(t => t.SoLuong);
 
-            // Tự động tạo cảnh báo nếu SoLuong < 10
-            if (existing.SoLuong < 10)
+            if (tongTon < soLuongCanTru)
+                return BadRequest(new { message = "Không đủ số lượng trong kho để trừ" });
+
+            foreach (var item in tonKhos)
             {
-                var canhBao = new CanhBao
+                if (soLuongCanTru <= 0) break;
+
+                if (item.SoLuong >= soLuongCanTru)
                 {
-                    LoaiCanhBao = "SapHetHang",
-                    NoiDung = $"Sản phẩm {existing.SanPhamId} sắp hết hàng, còn {existing.SoLuong} sản phẩm",
-                    ThoiGian = DateTime.Now,
-                    DaXuLy = false,
-                    SanPhamId = existing.SanPhamId
-                };
-                _context.CanhBaos.Add(canhBao);
+                    item.SoLuong -= soLuongCanTru;
+                    soLuongCanTru = 0;
+                }
+                else
+                {
+                    soLuongCanTru -= item.SoLuong;
+                    item.SoLuong = 0;
+                }
             }
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Trừ kho thành công", soLuongConLai = existing.SoLuong });
+
+            var tongTonMoi = await _context.TonKhos
+                .Where(t => t.SanPhamId == tonkho.SanPhamId)
+                .SumAsync(t => t.SoLuong);
+
+            if (tongTonMoi < 10)
+            {
+                var tenSanPham = tonKhos.First().SanPham?.tenSanPham ?? $"SP #{tonkho.SanPhamId}";
+
+                var canhBao = new CanhBao
+                {
+                    LoaiCanhBao = "SapHetHang",
+                    NoiDung = $"Sản phẩm {tenSanPham} sắp hết hàng, còn {tongTonMoi} sản phẩm",
+                    ThoiGian = DateTime.Now,
+                    DaXuLy = false,
+                    SanPhamId = tonkho.SanPhamId
+                };
+
+                _context.CanhBaos.Add(canhBao);
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(new { message = "Trừ kho thành công", soLuongConLai = tongTonMoi });
         }
     }
 }

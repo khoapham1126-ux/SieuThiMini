@@ -7,6 +7,8 @@ const API_URL = "/api/TonKho";
 
 let allProducts = [];
 let filteredProducts = [];
+let productMap = {};
+let loHangMap = {};
 
 document.addEventListener("DOMContentLoaded", () => {
     loadInventory();
@@ -15,12 +17,33 @@ document.addEventListener("DOMContentLoaded", () => {
 // ── TẢI DỮ LIỆU TỪ API ───────────────────────────────────────
 async function loadInventory() {
     try {
-        const res = await fetch(API_URL);
+        const [invRes, spRes, loRes] = await Promise.all([
+            fetch(API_URL),
+            fetch("/api/SanPham"),
+            fetch("/api/LoHang")
+        ]);
 
-        if (!res.ok) throw new Error(`Lỗi API: ${res.status}`);
+        if (!invRes.ok) throw new Error(`Lỗi API tồn kho: ${invRes.status}`);
 
-        const data = await res.json();
-        allProducts = data;
+        const [invData, spData, loData] = await Promise.all([
+            invRes.json(),
+            spRes.ok ? spRes.json() : [],
+            loRes.ok ? loRes.json() : []
+        ]);
+
+        allProducts = invData;
+
+        // Map tên sản phẩm theo maSanPham
+        productMap = {};
+        spData.forEach(sp => {
+            productMap[sp.maSanPham] = sp;
+        });
+
+        // Map lô hàng theo Id
+        loHangMap = {};
+        loData.forEach(lo => {
+            loHangMap[lo.id] = lo;
+        });
 
         filterInventory();
         renderStats();
@@ -74,16 +97,17 @@ function renderTable() {
     }
 
     tbody.innerHTML = filteredProducts.map(p => {
+        const sp = productMap[p.sanPhamId];
+        const tenSanPham = sp ? sp.tenSanPham : `Sản phẩm #${p.sanPhamId}`;
+        const maVach = sp ? sp.maVach : `Mã #${p.sanPhamId}`;
+
         const isOut = p.soLuong === 0;
         const isLow = p.soLuong > 0 && p.soLuong < 10;
 
-        // Số lượng dưới 10 → chữ đỏ
         const qtyClass = (isOut || isLow) ? "qty-low" : "";
-
         const barClass = isOut ? "bar-low" : isLow ? "bar-low" : p.soLuong < 30 ? "bar-mid" : "bar-ok";
         const barWidth = isOut ? 2 : Math.round((p.soLuong / maxQty) * 100);
 
-        // Badge trạng thái
         const badge = isOut
             ? `<span class="badge badge-het-hang">Hết hàng</span>`
             : isLow
@@ -93,15 +117,15 @@ function renderTable() {
         return `
         <tr>
             <td class="text-muted small">#${p.id}</td>
-            <td class="fw-semibold">Sản phẩm #${p.sanPhamId}</td>
-            <td class="text-muted small">Lô #${p.loHangId}</td>
-            <td class="text-end">—</td>
             <td>
-                <div class="qty-bar-wrap">
-                    <span class="${qtyClass}">${p.soLuong}</span>
-                    <div class="qty-bar">
-                        <div class="qty-bar-fill ${barClass}" style="width:${barWidth}%"></div>
-                    </div>
+                <div class="fw-semibold">${tenSanPham}</div>
+                <div class="text-muted small">${maVach}</div>
+            </td>
+            <td class="text-muted small">Lô #${p.loHangId}</td>
+            <td class="text-end">
+                <span class="${qtyClass}">${p.soLuong}</span>
+                <div class="qty-bar">
+                    <div class="qty-bar-fill ${barClass}" style="width:${barWidth}%"></div>
                 </div>
             </td>
             <td class="text-center">${badge}</td>

@@ -21,6 +21,7 @@ namespace WebApplication1.Controllers
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _context.CanhBaos
+                .Include(c => c.SanPham)
                 .OrderByDescending(c => c.ThoiGian)
                 .ToListAsync());
         }

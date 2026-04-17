@@ -25,10 +25,15 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseDefaultFiles();
 
-app.MapGet("/", context =>
+app.Use(async (context, next) =>
 {
-    context.Response.Redirect("/pages/login.html");
-    return Task.CompletedTask;
+    if (context.Request.Path == "/")
+    {
+        context.Response.Redirect("/pages/login.html");
+        return;
+    }
+
+    await next();
 });
 
 app.UseAuthorization();

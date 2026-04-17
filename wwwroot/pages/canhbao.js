@@ -98,13 +98,13 @@ function renderTable() {
 
         return `
         <tr id="row-${c.id}">
-            <td class="text-muted small">#${c.id}</td>
-            <td><span class="badge bg-secondary bg-opacity-10 text-secondary">${c.loaiCanhBao || "—"}</span></td>
-            <td>${c.noiDung || "—"}</td>
-            <td class="text-muted small">SP #${c.sanPhamId}</td>
-            <td class="small">${formatDate(c.thoiGian)}</td>
-            <td class="text-center">${badge}</td>
-            <td class="text-center">${btnXuLy}</td>
+        <td class="text-muted small">#${c.id}</td>
+        <td><span class="badge bg-secondary bg-opacity-10 text-secondary">${c.loaiCanhBao || "—"}</span></td>
+        <td>${c.noiDung || "—"}</td>
+        <td class="text-muted small">SP #${c.sanPhamId}</td>
+        <td class="small">${formatDate(c.thoiGian)}</td>
+        <td class="text-center">${badge}</td>
+        <td class="text-center">${btnXuLy}</td>
         </tr>`;
     }).join("");
 }
