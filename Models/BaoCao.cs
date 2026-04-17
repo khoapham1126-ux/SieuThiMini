@@ -5,7 +5,7 @@ namespace WebApplication1.Models
         public int Id { get; set; }
         public string LoaiBaoCao { get; set; } = string.Empty;
         public DateTime NgayTao { get; set; }
-        public string NoiDung { get; set; } = string.Empty;///////
+        public string NoiDung { get; set; } = string.Empty;
         public int NhanVienId { get; set; }
     }
 }

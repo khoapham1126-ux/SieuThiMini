@@ -1,13 +1,11 @@
 ﻿/**
  * phieunhap.js — Trang nhập hàng
- * Đặt trong: wwwroot/pages/phieunhap.js
  *
- * API sử dụng:
- *   GET  /api/NhaCungCap  → { id, Ten, DiaChi, SoDienThoai, Email }
+ * API:
+ *   GET  /api/NhaCungCap  → { id, ten, diaChi, soDienThoai, email }
  *   GET  /api/SanPham     → { maSanPham, tenSanPham, maVach, giaBan, giaVon, ... }
  *   POST /api/PhieuNhap?sanPhamId=...&soLuong=...
- *        body: { id, ngayNhap, tongTien, nhaCungCapId, nhanVienId }
- *   GET  /api/PhieuNhap   → load lịch sử
+ *   GET  /api/PhieuNhap
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -30,6 +28,7 @@ async function loadNhaCungCap() {
     const sel = document.getElementById("nhaCungCapId");
     try {
         const res = await fetch("/api/NhaCungCap");
+        if (!res.ok) throw new Error();
         const data = await res.json();
 
         if (!data || data.length === 0) {
@@ -37,9 +36,9 @@ async function loadNhaCungCap() {
             return;
         }
 
-        // Field: id, Ten
+        // ASP.NET Core mặc định trả camelCase: ten (không phải Ten)
         sel.innerHTML = `<option value="">-- Chọn nhà cung cấp --</option>` +
-            data.map(n => `<option value="${n.id}">${n.Ten}</option>`).join("");
+            data.map(n => `<option value="${n.id}">${n.ten ?? n.Ten ?? "(không tên)"}</option>`).join("");
 
     } catch {
         sel.innerHTML = `<option value="">-- Lỗi tải nhà cung cấp --</option>`;
@@ -51,6 +50,7 @@ async function loadSanPham() {
     const sel = document.getElementById("sanPhamId");
     try {
         const res = await fetch("/api/SanPham");
+        if (!res.ok) throw new Error();
         const data = await res.json();
 
         if (!data || data.length === 0) {
@@ -58,7 +58,6 @@ async function loadSanPham() {
             return;
         }
 
-        // Field: maSanPham, tenSanPham, giaVon (dùng giaVon làm đơn giá nhập)
         sel.innerHTML = `<option value="">-- Chọn sản phẩm --</option>` +
             data.map(p => `<option value="${p.maSanPham}" data-gia="${p.giaVon}">
                 ${p.tenSanPham}
@@ -98,7 +97,6 @@ async function submitPhieuNhap() {
     const ngayNhap = document.getElementById("ngayNhap").value;
     const nhanVienId = parseInt(localStorage.getItem("nhanVienId") || "1");
 
-    // Validate
     if (!sanPhamId) return showAlert("danger", "Vui lòng chọn sản phẩm!");
     if (!soLuong || soLuong < 1) return showAlert("danger", "Số lượng phải lớn hơn 0!");
     if (!donGia || donGia < 1) return showAlert("danger", "Đơn giá phải lớn hơn 0!");
