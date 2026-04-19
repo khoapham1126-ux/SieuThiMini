@@ -13,6 +13,6 @@ namespace WebApplication1.Models
         public int maDanhMuc { get; set; }
         public bool trangthai { get; set; }
         public int maNhaCungCap { get; set; }
-
+        public string DonViTinh { get; set; } = string.Empty; 
     }
 }

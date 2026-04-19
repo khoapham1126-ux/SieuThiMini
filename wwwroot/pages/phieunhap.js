@@ -35,8 +35,6 @@ async function loadNhaCungCap() {
             sel.innerHTML = `<option value="">-- Chưa có nhà cung cấp --</option>`;
             return;
         }
-
-        // ASP.NET Core mặc định trả camelCase: ten (không phải Ten)
         sel.innerHTML = `<option value="">-- Chọn nhà cung cấp --</option>` +
             data.map(n => `<option value="${n.id}">${n.ten ?? n.Ten ?? "(không tên)"}</option>`).join("");
 

@@ -177,9 +177,7 @@ function clearCart() {
     renderCart();
 }
 
-// ============================================================
-// Cập nhật tổng tiền & nút thanh toán
-// ============================================================
+
 function updateTotal() {
     const totalItems = cart.reduce((sum, item) => sum + item.soLuong, 0);
     const totalAmount = cart.reduce((sum, item) => sum + item.sanPham.giaBan * item.soLuong, 0);
@@ -254,14 +252,14 @@ async function checkout() {
         if (!thanhToanRes.ok) {
             throw new Error("Cập nhật trạng thái thanh toán thất bại");
         }
-
+.sanP
         // ── Bước 4: Trừ kho ──────────────────────────────────
         await Promise.all(cart.map(item =>
             fetch("/api/TonKho/tru", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    SanPhamId: item.sanPham.maSanPham,
+                    SanPhamId: itemham.maSanPham,
                     SoLuong: item.soLuong
                 })
             })
@@ -283,9 +281,6 @@ async function checkout() {
     }
 }
 
-// ============================================================
-// Tiện ích: Format tiền tệ
-// ============================================================
 function formatCurrency(amount) {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
 }

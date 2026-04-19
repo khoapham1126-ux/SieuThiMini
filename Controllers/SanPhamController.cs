@@ -52,5 +52,15 @@ namespace WebApplication1.Controllers
                 return NotFound(new { message = $"Không tìm thấy sản phẩm với mã vạch: {mavach}" });
             return Ok(sanpham);
         }
+
+        // PUT: api/SanPham/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, Sanpham sanpham)
+        {
+            if (id != sanpham.maSanPham) return BadRequest();
+            _context.Entry(sanpham).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Cập nhật sản phẩm thành công" });
+        }
     }
 }

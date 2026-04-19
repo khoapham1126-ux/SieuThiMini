@@ -4,10 +4,8 @@ namespace WebApplication1.Models
     {
         public int Id { get; set; }
         public int SoLuong { get; set; }
-
         public int SanPhamId { get; set; }
         public Sanpham? SanPham { get; set; }
-
         public int LoHangId { get; set; }
         public LoHang? LoHang { get; set; }
     }

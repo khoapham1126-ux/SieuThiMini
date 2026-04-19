@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
     loadInventory();
 });
 
-// ── TẢI DỮ LIỆU TỪ API ───────────────────────────────────────
 async function loadInventory() {
     try {
         const [invRes, spRes, loRes] = await Promise.all([

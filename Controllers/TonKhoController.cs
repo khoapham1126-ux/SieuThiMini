@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Data;
 using WebApplication1.Models;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +25,6 @@ namespace WebApplication1.Controllers
                 .ToListAsync();
         }
 
-        // POST: api/tonkho
         [HttpPost]
         public async Task<IActionResult> ThemTonKho([FromBody] TonKho tonkho)
         {
@@ -52,10 +50,12 @@ namespace WebApplication1.Controllers
             if (tonkho.SoLuong <= 0)
                 return BadRequest(new { message = "Số lượng trừ phải lớn hơn 0" });
 
+            // FEFO: lấy các lô còn hàng, sắp xếp theo HanSuDung tăng dần
             var tonKhos = await _context.TonKhos
                 .Include(t => t.SanPham)
+                .Include(t => t.LoHang)
                 .Where(t => t.SanPhamId == tonkho.SanPhamId && t.SoLuong > 0)
-                .OrderBy(t => t.LoHangId)
+                .OrderBy(t => t.LoHang!.HanSuDung)
                 .ToListAsync();
 
             if (!tonKhos.Any())
@@ -65,7 +65,7 @@ namespace WebApplication1.Controllers
             int tongTon = tonKhos.Sum(t => t.SoLuong);
 
             if (tongTon < soLuongCanTru)
-                return BadRequest(new { message = "Không đủ số lượng trong kho để trừ" });
+                return BadRequest(new { message = $"Không đủ số lượng trong kho (tồn: {tongTon})" });
 
             foreach (var item in tonKhos)
             {
@@ -92,21 +92,18 @@ namespace WebApplication1.Controllers
             if (tongTonMoi < 10)
             {
                 var tenSanPham = tonKhos.First().SanPham?.tenSanPham ?? $"SP #{tonkho.SanPhamId}";
-
-                var canhBao = new CanhBao
+                _context.CanhBaos.Add(new CanhBao
                 {
                     LoaiCanhBao = "SapHetHang",
-                    NoiDung = $"Sản phẩm {tenSanPham} sắp hết hàng, còn {tongTonMoi} sản phẩm",
+                    NoiDung = $"Sản phẩm {tenSanPham} sắp hết hàng, còn {tongTonMoi}",
                     ThoiGian = DateTime.Now,
                     DaXuLy = false,
                     SanPhamId = tonkho.SanPhamId
-                };
-
-                _context.CanhBaos.Add(canhBao);
+                });
                 await _context.SaveChangesAsync();
             }
 
-            return Ok(new { message = "Trừ kho thành công", soLuongConLai = tongTonMoi });
+            return Ok(new { message = "Trừ kho thành công (FEFO)", soLuongConLai = tongTonMoi });
         }
     }
 }
