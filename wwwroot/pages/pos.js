@@ -252,14 +252,14 @@ async function checkout() {
         if (!thanhToanRes.ok) {
             throw new Error("Cập nhật trạng thái thanh toán thất bại");
         }
-.sanP
+
         // ── Bước 4: Trừ kho ──────────────────────────────────
         await Promise.all(cart.map(item =>
             fetch("/api/TonKho/tru", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    SanPhamId: itemham.maSanPham,
+                    SanPhamId: item.sanPham.maSanPham,
                     SoLuong: item.soLuong
                 })
             })
