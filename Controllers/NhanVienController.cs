@@ -16,7 +16,6 @@ namespace WebApplication1.Controllers
             _context = context;
         }
 
-        // --- CÁC HÀM CÓ SẴN CỦA NHÓM ---
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -30,6 +29,7 @@ namespace WebApplication1.Controllers
             await _context.SaveChangesAsync();
             return Ok(nhanVien);
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -37,30 +37,43 @@ namespace WebApplication1.Controllers
             if (nv == null) return NotFound(new { message = "Không tìm thấy nhân viên!" });
             return Ok(nv);
         }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, NhanVien nhanVien)
         {
-            if (id != nhanVien.Id)
-            {
-                return BadRequest(new { message = "ID không khớp!" });
-            }
-
+            if (id != nhanVien.Id) return BadRequest(new { message = "ID không khớp!" });
             _context.Entry(nhanVien).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
+            try { await _context.SaveChangesAsync(); }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_context.NhanViens.Any(e => e.Id == id))
-                {
-                    return NotFound(new { message = "Nhân viên không tồn tại!" });
-                }
+                if (!_context.NhanViens.Any(e => e.Id == id)) return NotFound(new { message = "Nhân viên không tồn tại!" });
                 throw;
             }
+            return Ok(new { message = "Cập nhật thành công!" });
+        }
 
-            return Ok(new { message = "Cập nhật thông tin nhân viên thành công!" });
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            var user = await _context.NhanViens
+                .FirstOrDefaultAsync(u => u.Username == request.Username && u.MatKhau == request.MatKhau);
+
+            if (user != null)
+            {
+                return Ok(new
+                {
+                    id = user.Id,
+                    hoTen = user.HoTen,
+                    vaiTro = user.ChucVu
+                });
+            }
+            return Unauthorized(new { message = "Sai tài khoản hoặc mật khẩu!" });
+        }
+
+        public class LoginRequest
+        {
+            public string Username { get; set; }
+            public string MatKhau { get; set; }
         }
     }
 }

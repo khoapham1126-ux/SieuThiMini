@@ -1,0 +1,40 @@
+﻿<main class="page-content">
+    <div class="card-ui p-4 mb-4">
+        <h5 class="fw-bold mb-3">Quản lý chương trình SALE</h5>
+        <form id="formKhuyenMai" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" id="tenKM" placeholder="Tên khuyến mãi" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control" id="phanTram" placeholder="% Giảm" required>
+            </div>
+            <div class="col-md-3">
+                <input type="date" id="ngayBD" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+                <input type="date" id="ngayKT" class="form-control" required>
+            </div>
+            <div class="col-12">
+                <textarea class="form-control" id="dieuKien" placeholder="Điều kiện áp dụng (Ví dụ: Đơn hàng trên 500k)"></textarea>
+            </div>
+            <div class="col-12 text-end">
+                <button type="submit" class="btn btn-primary px-4">Lưu chương trình</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-ui p-4">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Tên KM</th>
+                    <th>Mức giảm</th>
+                    <th>Thời gian</th>
+                    <th>Điều kiện</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="listKM"></tbody>
+        </table>
+    </div>
+</main>
