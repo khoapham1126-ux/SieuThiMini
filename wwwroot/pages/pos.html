@@ -37,15 +37,169 @@
         .empty-cart {
             color: #9ca3af;
         }
+
+        /* Camera scanner */
+        #reader {
+            border: 2px dashed #dc2626;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+
+            #reader video {
+                border-radius: 10px;
+            }
+
+        .camera-toggle-btn {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            border: none;
+            color: white;
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 8px 18px;
+            transition: opacity 0.2s;
+        }
+
+            .camera-toggle-btn:hover {
+                opacity: 0.85;
+                color: white;
+            }
+
+            .camera-toggle-btn.active {
+                background: linear-gradient(135deg, #374151, #111827);
+            }
+
+        /* Badge SALE */
+        .badge-sale {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            font-size: 0.68rem;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            animation: salePulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes salePulse {
+            0%,100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
+        }
+
+        /* Modal thanh toán */
+        .payment-method-btn {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .payment-method-btn:hover {
+                border-color: #dc2626;
+                background: #fff5f5;
+            }
+
+            .payment-method-btn.selected {
+                border-color: #dc2626;
+                background: #fee2e2;
+                color: #b91c1c;
+            }
+
+            .payment-method-btn .icon {
+                font-size: 1.5rem;
+            }
+
+        .change-display {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 12px 16px;
+        }
+
+            .change-display.negative {
+                background: #fff1f2;
+                border-color: #fecdd3;
+            }
+
+        /* Tóm tắt đơn trong modal */
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.92rem;
+        }
+
+            .receipt-item:last-child {
+                border-bottom: none;
+            }
+
+        .discount-badge {
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 0.75rem;
+            padding: 1px 6px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+
+        /* Cart item với sale */
+        .price-original {
+            text-decoration: line-through;
+            color: #9ca3af;
+            font-size: 0.82rem;
+        }
+
+        .price-sale {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        /* Scan indicator */
+        .scan-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            color: #16a34a;
+        }
+
+        .scan-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #16a34a;
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%,100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.2
+            }
+        }
     </style>
 </head>
 <body>
     <div class="app-wrapper">
         <aside class="sidebar p-3">
-            <div class="brand mb-4">
-                Siêu Thị Mini
-                <small>Management Dashboard</small>
-            </div>
+            <div class="brand mb-4">Siêu Thị Mini<small>Management Dashboard</small></div>
             <ul class="nav flex-column">
                 <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link active" href="pos.html">Bán hàng</a></li>
@@ -64,7 +218,7 @@
             <header class="topbar d-flex justify-content-between align-items-center">
                 <div>
                     <h5>Bán hàng (POS)</h5>
-                    <div class="text-muted small">Quét mã vạch hoặc tìm sản phẩm để bán</div>
+                    <div class="text-muted small">Quét mã vạch hoặc dùng camera để bán hàng</div>
                 </div>
                 <div class="user-chip">
                     <div class="avatar" id="userAvatar">K</div>
@@ -78,10 +232,26 @@
             <main class="page-content">
                 <div class="row g-3">
 
-                    <!-- CỘT TRÁI: Tìm sản phẩm -->
+                    <!-- CỘT TRÁI -->
                     <div class="col-lg-5">
+
+                        <!-- Nhập mã vạch -->
                         <div class="card-ui p-4 mb-3">
-                            <h6 class="fw-bold mb-3">Nhập mã vạch sản phẩm</h6>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-0">Tìm sản phẩm</h6>
+                                <button class="camera-toggle-btn" id="cameraBtn" onclick="toggleCamera()">
+                                    📷 Bật camera
+                                </button>
+                            </div>
+
+                            <!-- Camera reader -->
+                            <div id="cameraSection" class="mb-3 d-none">
+                                <div id="reader" style="width:100%;max-height:220px;"></div>
+                                <div class="scan-indicator mt-2 d-none" id="scanIndicator">
+                                    <div class="scan-dot"></div> Đang quét...
+                                </div>
+                            </div>
+
                             <div class="input-group">
                                 <input type="text" class="form-control" id="barcodeInput"
                                        placeholder="Quét hoặc nhập mã vạch rồi Enter..."
@@ -92,13 +262,20 @@
                         </div>
 
                         <!-- Thông tin sản phẩm tìm được -->
-                        <div class="card-ui p-4 d-none" id="productCard">
+                        <div class="card-ui p-4 d-none mb-3" id="productCard">
                             <h6 class="fw-bold mb-3 text-danger">Sản phẩm tìm thấy</h6>
                             <div class="product-found p-3 rounded bg-light">
-                                <div class="fw-semibold fs-6" id="productName">---</div>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <div class="fw-semibold fs-6" id="productName">---</div>
+                                    <span class="badge-sale d-none" id="productSaleBadge">SALE</span>
+                                </div>
                                 <div class="text-muted small mb-2">Mã vạch: <span id="productBarcode">---</span></div>
+                                <div id="productSaleInfo" class="d-none mb-2 small text-warning fw-semibold"></div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-danger fw-bold fs-5" id="productPrice">0 đ</span>
+                                    <div>
+                                        <span class="price-original d-none" id="productOriginalPrice"></span>
+                                        <span class="text-danger fw-bold fs-5" id="productPrice">0 đ</span>
+                                    </div>
                                     <button class="btn btn-primary btn-sm" onclick="addToCart()">
                                         + Thêm vào giỏ
                                     </button>
@@ -106,14 +283,14 @@
                             </div>
                         </div>
 
-                        <!-- Lỗi không tìm thấy -->
-                        <div class="alert alert-danger d-none mt-2" id="productError"></div>
+                        <!-- Lỗi -->
+                        <div class="alert alert-danger d-none mb-3" id="productError"></div>
 
-                        <!-- Chọn khách hàng (optional) -->
-                        <div class="card-ui p-4 mt-3">
+                        <!-- Khách hàng -->
+                        <div class="card-ui p-4">
                             <h6 class="fw-bold mb-2">Khách hàng (tuỳ chọn)</h6>
                             <select class="form-select" id="customerSelect">
-                                <option value="">-- Khách lẻ (không cần chọn) --</option>
+                                <option value="">-- Khách lẻ --</option>
                             </select>
                         </div>
                     </div>
@@ -148,19 +325,27 @@
                                 </table>
                             </div>
 
-                            <!-- Tổng tiền & Thanh toán -->
+                            <!-- Tổng & nút thanh toán -->
                             <div class="total-bar p-4 mt-3">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="fs-6 opacity-90">Tổng số mặt hàng:</span>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="opacity-90">Tổng số mặt hàng:</span>
                                     <span class="fw-bold" id="totalItems">0</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="opacity-90">Tạm tính:</span>
+                                    <span id="subtotalAmount">0 đ</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3" id="discountRow" style="display:none!important">
+                                    <span class="opacity-90">Giảm giá:</span>
+                                    <span class="fw-semibold" id="discountAmount" style="color:#fbbf24">- 0 đ</span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <span class="fs-5 fw-semibold">Tổng tiền:</span>
                                     <span class="fs-4 fw-bold" id="totalAmount">0 đ</span>
                                 </div>
                                 <button class="btn btn-light w-100 fw-bold text-danger fs-6"
-                                        onclick="checkout()" id="checkoutBtn" disabled>
-                                    Thanh toán
+                                        onclick="openCheckoutModal()" id="checkoutBtn" disabled>
+                                    💳 Thanh toán
                                 </button>
                             </div>
 
@@ -172,6 +357,95 @@
         </div>
     </div>
 
+    <!-- ══════════════════════════════════════════════════════
+         MODAL THANH TOÁN
+    ══════════════════════════════════════════════════════ -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="border-radius:20px;border:none;">
+                <div class="modal-header" style="background:linear-gradient(135deg,#dc2626,#b91c1c);color:white;border-radius:20px 20px 0 0;">
+                    <h5 class="modal-title fw-bold">💳 Thanh toán đơn hàng</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <div class="row g-4">
+                        <!-- Tóm tắt đơn hàng -->
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3 text-muted">📋 Tóm tắt đơn hàng</h6>
+                            <div id="receiptItems" class="mb-3"></div>
+
+                            <div class="d-flex justify-content-between fw-semibold border-top pt-2 mb-1">
+                                <span>Tạm tính:</span>
+                                <span id="modalSubtotal">0 đ</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-warning fw-semibold mb-1 d-none" id="modalDiscountRow">
+                                <span>Giảm giá SALE:</span>
+                                <span id="modalDiscount">- 0 đ</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold fs-5 border-top pt-2" style="color:#dc2626">
+                                <span>Tổng cộng:</span>
+                                <span id="modalTotal">0 đ</span>
+                            </div>
+                        </div>
+
+                        <!-- Phương thức thanh toán -->
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3 text-muted">💰 Phương thức thanh toán</h6>
+
+                            <div class="d-flex flex-column gap-2 mb-3">
+                                <div class="payment-method-btn selected" id="btnTienMat" onclick="selectPayment('TienMat')">
+                                    <span class="icon">💵</span>
+                                    <div>
+                                        <div class="fw-bold">Tiền mặt</div>
+                                        <div class="small text-muted fw-normal">Trả bằng tiền mặt</div>
+                                    </div>
+                                </div>
+                                <div class="payment-method-btn" id="btnThe" onclick="selectPayment('The')">
+                                    <span class="icon">💳</span>
+                                    <div>
+                                        <div class="fw-bold">Thẻ / Chuyển khoản</div>
+                                        <div class="small text-muted fw-normal">ATM, VISA, QR Banking</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tiền mặt section -->
+                            <div id="cashSection">
+                                <label class="form-label fw-semibold">Tiền khách đưa (đ)</label>
+                                <input type="number" class="form-control mb-2" id="tienKhachDua"
+                                       placeholder="Nhập số tiền..." oninput="tinhTienThua()">
+                                <div class="change-display" id="changeDisplay">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-semibold">Tiền thừa trả lại:</span>
+                                        <span class="fw-bold fs-5" id="tienThua" style="color:#16a34a">0 đ</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Thẻ section -->
+                            <div id="cardSection" class="d-none">
+                                <div class="alert alert-info d-flex align-items-center gap-2 mb-0">
+                                    <span style="font-size:1.3rem">ℹ️</span>
+                                    <div class="small">Yêu cầu khách quẹt thẻ / chuyển khoản theo QR. Xác nhận sau khi nhận được tiền.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Huỷ</button>
+                    <button class="btn btn-danger fw-bold px-4" onclick="confirmCheckout()" id="confirmPayBtn">
+                        ✅ Xác nhận thanh toán
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- html5-qrcode -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="assets/js/app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="pos.js"></script>
