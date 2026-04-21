@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿<!--<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -85,67 +85,61 @@
 
                 <div id="formAlert" class="alert d-none mb-3"></div>
 
-                <div class="row g-4">
+                <div class="row g-4">-->
+<!-- Form nhập hàng -->
+<!--<div class="col-lg-7">
+    <div class="card-ui p-4">
+        <h6 class="fw-bold mb-3">Thông tin phiếu nhập</h6>-->
+<!-- Nhà cung cấp -->
+<!--<div class="mb-3">
+    <label class="form-label">Nhà cung cấp</label>
+    <select class="form-select" id="nhaCungCapId">
+        <option value="">-- Đang tải... --</option>
+    </select>
+</div>-->
+<!-- Sản phẩm -->
+<!--<div class="mb-3">
+    <label class="form-label">Sản phẩm</label>
+    <select class="form-select" id="sanPhamId" onchange="onSanPhamChange()">
+        <option value="">-- Đang tải... --</option>
+    </select>
+</div>-->
+<!-- Số lượng + Đơn giá -->
+<!--<div class="row g-3 mb-3">
+    <div class="col-6">
+        <label class="form-label">Số lượng nhập</label>
+        <input type="number" class="form-control" id="soLuong"
+               min="1" placeholder="0" oninput="tinhTongTien()">
+    </div>
+    <div class="col-6">
+        <label class="form-label">Đơn giá nhập (đ)</label>
+        <input type="number" class="form-control" id="donGia"
+               min="0" placeholder="0" oninput="tinhTongTien()">
+    </div>
+</div>-->
+<!-- Ngày nhập -->
+<!--<div class="mb-3">
+    <label class="form-label">Ngày nhập</label>
+    <input type="datetime-local" class="form-control" id="ngayNhap">
+</div>-->
+<!-- Thêm vào sau ô Ngày nhập -->
+<!--<div class="mb-3">
+    <label class="form-label">Hạn sử dụng <span class="text-danger">*</span></label>
+    <input type="date" class="form-control" id="hanSuDung" required>
+</div>-->
+<!-- Tổng tiền -->
+<!--<div class="summary-box mb-4 d-flex justify-content-between align-items-center">
+            <span class="text-muted">Tổng tiền:</span>
+            <span class="fw-bold fs-5 text-danger" id="tongTienHienThi">0đ</span>
+        </div>
 
-                    <!-- Form nhập hàng -->
-                    <div class="col-lg-7">
-                        <div class="card-ui p-4">
-                            <h6 class="fw-bold mb-3">Thông tin phiếu nhập</h6>
-
-                            <!-- Nhà cung cấp -->
-                            <div class="mb-3">
-                                <label class="form-label">Nhà cung cấp</label>
-                                <select class="form-select" id="nhaCungCapId">
-                                    <option value="">-- Đang tải... --</option>
-                                </select>
-                            </div>
-
-                            <!-- Sản phẩm -->
-                            <div class="mb-3">
-                                <label class="form-label">Sản phẩm</label>
-                                <select class="form-select" id="sanPhamId" onchange="onSanPhamChange()">
-                                    <option value="">-- Đang tải... --</option>
-                                </select>
-                            </div>
-
-                            <!-- Số lượng + Đơn giá -->
-                            <div class="row g-3 mb-3">
-                                <div class="col-6">
-                                    <label class="form-label">Số lượng nhập</label>
-                                    <input type="number" class="form-control" id="soLuong"
-                                           min="1" placeholder="0" oninput="tinhTongTien()">
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label">Đơn giá nhập (đ)</label>
-                                    <input type="number" class="form-control" id="donGia"
-                                           min="0" placeholder="0" oninput="tinhTongTien()">
-                                </div>
-                            </div>
-
-                            <!-- Ngày nhập -->
-                            <div class="mb-3">
-                                <label class="form-label">Ngày nhập</label>
-                                <input type="datetime-local" class="form-control" id="ngayNhap">
-                            </div>
-                            <!-- Thêm vào sau ô Ngày nhập -->
-                            <div class="mb-3">
-                                <label class="form-label">Hạn sử dụng <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="hanSuDung" required>
-                            </div>
-                            <!-- Tổng tiền -->
-                            <div class="summary-box mb-4 d-flex justify-content-between align-items-center">
-                                <span class="text-muted">Tổng tiền:</span>
-                                <span class="fw-bold fs-5 text-danger" id="tongTienHienThi">0đ</span>
-                            </div>
-
-                            <button class="btn btn-nhap w-100" id="btnNhap" onclick="submitPhieuNhap()">
-                                Xác nhận nhập hàng
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Lịch sử nhập gần đây -->
-                    <div class="col-lg-5">
+        <button class="btn btn-nhap w-100" id="btnNhap" onclick="submitPhieuNhap()">
+            Xác nhận nhập hàng
+        </button>
+    </div>
+</div>-->
+<!-- Lịch sử nhập gần đây -->
+<!--<div class="col-lg-5">
                         <div class="card-ui p-4">
                             <h6 class="fw-bold mb-3">Phiếu nhập gần đây</h6>
                             <div class="table-responsive">
@@ -167,6 +161,240 @@
 
                 </div>
             </main>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="phieunhap.js"></script>
+</body>
+</html>-->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhập Hàng - Siêu Thị Mini</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/app.css">
+    <style>
+        .form-label {
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #374151;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220,38,38,0.12);
+        }
+
+        .btn-nhap {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 10px 28px;
+            border-radius: 10px;
+        }
+
+            .btn-nhap:hover {
+                opacity: 0.9;
+                color: white;
+            }
+
+            .btn-nhap:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+        .summary-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px 20px;
+        }
+
+        /* ── Danh sách sản phẩm nhập ── */
+        .sp-row {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .btn-remove-sp {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #dc2626;
+            font-size: 1.1rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .btn-them-sp {
+            border: 2px dashed #d1d5db;
+            background: none;
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            color: #6b7280;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .btn-them-sp:hover {
+                border-color: #dc2626;
+                color: #dc2626;
+            }
+
+        /* ── Modal chi tiết ── */
+        .modal-header {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: white;
+        }
+
+            .modal-header .btn-close {
+                filter: invert(1);
+            }
+
+        .btn-chitiet {
+            background: none;
+            border: 1px solid #6b7280;
+            border-radius: 8px;
+            padding: 3px 10px;
+            font-size: 0.78rem;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .btn-chitiet:hover {
+                border-color: #dc2626;
+                color: #dc2626;
+            }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar p-3">
+            <div class="brand mb-4">
+                Siêu Thị Mini
+                <small>Management Dashboard</small>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="pos.html">Bán hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="donhang.html">Đơn hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="tonkho.html">Tồn kho</a></li>
+                <li class="nav-item"><a class="nav-link active" href="phieunhap.html">Nhập hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="nhanvien.html">Nhân viên</a></li>
+                <li class="nav-item"><a class="nav-link" href="khachhang.html">Khách hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="nhacc.html">Nhà cung cấp</a></li>
+                <li class="nav-item"><a class="nav-link" href="canhbao.html">Cảnh báo</a></li>
+                <li class="nav-item mt-2"><a class="nav-link text-danger" href="#" onclick="logout()">Đăng xuất</a></li>
+            </ul>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar d-flex justify-content-between align-items-center">
+                <div>
+                    <h5>Nhập Hàng</h5>
+                    <div class="text-muted small">Tạo phiếu nhập hàng mới</div>
+                </div>
+                <div class="user-chip">
+                    <div class="avatar" id="userAvatar">K</div>
+                    <div>
+                        <div class="small text-muted">Xin chào</div>
+                        <div class="fw-semibold" id="staffName">Nhân viên</div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+                <div id="formAlert" class="alert d-none mb-3"></div>
+
+                <div class="row g-4">
+
+                    <!-- ── Form nhập hàng ── -->
+                    <div class="col-lg-7">
+                        <div class="card-ui p-4">
+                            <h6 class="fw-bold mb-3">Thông tin phiếu nhập</h6>
+
+                            <!-- Nhà cung cấp -->
+                            <div class="mb-3">
+                                <label class="form-label">Nhà cung cấp <span class="text-danger">*</span></label>
+                                <select class="form-select" id="nhaCungCapId">
+                                    <option value="">-- Đang tải... --</option>
+                                </select>
+                            </div>
+
+                            <!-- Danh sách sản phẩm nhập -->
+                            <div class="mb-3">
+                                <label class="form-label">Danh sách sản phẩm <span class="text-danger">*</span></label>
+                                <div id="spList"></div>
+                                <button class="btn-them-sp mt-1" onclick="themDongSP()">
+                                    + Thêm sản phẩm
+                                </button>
+                            </div>
+
+                            <!-- Tổng tiền -->
+                            <div class="summary-box mb-4 d-flex justify-content-between align-items-center">
+                                <span class="text-muted fw-semibold">Tổng tiền:</span>
+                                <span class="fw-bold fs-5 text-danger" id="tongTienHienThi">0đ</span>
+                            </div>
+
+                            <button class="btn btn-nhap w-100" id="btnNhap" onclick="submitPhieuNhap()">
+                                Xác nhận nhập hàng
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ── Lịch sử phiếu nhập ── -->
+                    <div class="col-lg-5">
+                        <div class="card-ui p-4">
+                            <h6 class="fw-bold mb-3">Phiếu nhập gần đây</h6>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 table-modern">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Ngày nhập</th>
+                                            <th class="text-end">Tổng tiền</th>
+                                            <th class="text-center">Chi tiết</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="lichSuBody">
+                                        <tr><td colspan="4" class="text-center text-muted py-3">Đang tải...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ── Modal chi tiết phiếu nhập ── -->
+    <div class="modal fade" id="modalChiTiet" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Chi tiết phiếu nhập</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <div class="text-center text-muted py-4">Đang tải...</div>
+                </div>
+            </div>
         </div>
     </div>
 
