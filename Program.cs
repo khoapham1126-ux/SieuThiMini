@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,5 +39,19 @@ app.Use(async (context, next) =>
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        db.Database.CanConnect();
+        Console.WriteLine("✅ Kết nối database thành công!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Lỗi kết nối database: {ex.Message}");
+    }
+}
 
 app.Run();

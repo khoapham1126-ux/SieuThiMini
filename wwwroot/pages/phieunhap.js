@@ -92,37 +92,44 @@ async function submitPhieuNhap() {
     const soLuong = parseInt(document.getElementById("soLuong").value);
     const donGia = parseInt(document.getElementById("donGia").value);
     const nhaCungCapId = parseInt(document.getElementById("nhaCungCapId").value);
-    const ngayNhap = document.getElementById("ngayNhap").value;
-    const nhanVienId = parseInt(localStorage.getItem("nhanVienId") || "1");
+    const hanSuDung = document.getElementById("hanSuDung")?.value; // cần thêm field này
+    const nhanVienId = parseInt(localStorage.getItem("staffId") || "1");
 
     if (!sanPhamId) return showAlert("danger", "Vui lòng chọn sản phẩm!");
     if (!soLuong || soLuong < 1) return showAlert("danger", "Số lượng phải lớn hơn 0!");
     if (!donGia || donGia < 1) return showAlert("danger", "Đơn giá phải lớn hơn 0!");
     if (!nhaCungCapId) return showAlert("danger", "Vui lòng chọn nhà cung cấp!");
 
-    const tongTien = soLuong * donGia;
     const btn = document.getElementById("btnNhap");
     btn.disabled = true;
     btn.textContent = "Đang xử lý...";
 
     try {
-        const url = `/api/PhieuNhap?sanPhamId=${sanPhamId}&soLuong=${soLuong}`;
-
-        const res = await fetch(url, {
+        // ✅ ĐÚNG - gửi body JSON khớp với PhieuNhapRequest
+        const res = await fetch("/api/PhieuNhap", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                id: 0,
-                ngayNhap: new Date(ngayNhap).toISOString(),
-                tongTien: tongTien,
                 nhaCungCapId: nhaCungCapId,
-                nhanVienId: nhanVienId
+                nhanVienId: nhanVienId,
+                chiTiet: [
+                    {
+                        sanPhamId: sanPhamId,
+                        soLuong: soLuong,
+                        giaNhap: donGia,
+                        hanSuDung: hanSuDung || new Date(Date.now() + 365*24*60*60*1000).toISOString(),
+                        loaiDonVi: "Cái"
+                    }
+                ]
             })
         });
 
-        if (!res.ok) throw new Error(`Lỗi ${res.status}`);
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || `Lỗi ${res.status}`);
+        }
 
-        showAlert("success", "✅ Nhập hàng thành công! Tồn kho đã được cập nhật.");
+        showAlert("success", "✅ Nhập hàng thành công!");
         resetForm();
         loadLichSu();
 
