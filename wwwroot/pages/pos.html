@@ -38,7 +38,6 @@
             color: #9ca3af;
         }
 
-        /* Camera scanner */
         #reader {
             border: 2px dashed #dc2626;
             border-radius: 12px;
@@ -69,7 +68,6 @@
                 background: linear-gradient(135deg, #374151, #111827);
             }
 
-        /* Badge SALE */
         .badge-sale {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
@@ -93,7 +91,6 @@
             }
         }
 
-        /* Modal thanh toán */
         .payment-method-btn {
             border: 2px solid #e5e7eb;
             border-radius: 12px;
@@ -134,7 +131,6 @@
                 border-color: #fecdd3;
             }
 
-        /* Tóm tắt đơn trong modal */
         .receipt-item {
             display: flex;
             justify-content: space-between;
@@ -156,7 +152,6 @@
             font-weight: 600;
         }
 
-        /* Cart item với sale */
         .price-original {
             text-decoration: line-through;
             color: #9ca3af;
@@ -168,7 +163,6 @@
             font-weight: 700;
         }
 
-        /* Scan indicator */
         .scan-indicator {
             display: inline-flex;
             align-items: center;
@@ -193,6 +187,48 @@
             50% {
                 opacity: 0.2
             }
+        }
+
+        /* Coupon box */
+        .coupon-box {
+            background: #fffbeb;
+            border: 1.5px dashed #f59e0b;
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+            .coupon-box .form-control:focus {
+                border-color: #f59e0b;
+                box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+            }
+
+        /* QR section */
+        .qr-wrapper {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .qr-bank-info {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 0.85rem;
+            margin-top: 12px;
+        }
+
+        .qr-amount-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 6px 18px;
+            border-radius: 8px;
+            margin-bottom: 12px;
         }
     </style>
 </head>
@@ -244,7 +280,6 @@
                                 </button>
                             </div>
 
-                            <!-- Camera reader -->
                             <div id="cameraSection" class="mb-3 d-none">
                                 <div id="reader" style="width:100%;max-height:220px;"></div>
                                 <div class="scan-indicator mt-2 d-none" id="scanIndicator">
@@ -283,8 +318,30 @@
                             </div>
                         </div>
 
-                        <!-- Lỗi -->
                         <div class="alert alert-danger d-none mb-3" id="productError"></div>
+
+                        <!-- Mã khuyến mãi -->
+                        <div class="card-ui p-4 mb-3">
+                            <h6 class="fw-bold mb-2">🏷 Mã khuyến mãi</h6>
+                            <div class="coupon-box">
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" id="maKhuyenMaiInput"
+                                           placeholder="Nhập mã khuyến mãi..."
+                                           style="border-radius:8px 0 0 8px;">
+                                    <button class="btn btn-warning fw-semibold" id="btnApplyCoupon"
+                                            onclick="applyMaKhuyenMai()"
+                                            style="border-radius:0 8px 8px 0;color:white;">
+                                        Áp dụng
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm ms-1 fw-semibold"
+                                            onclick="removeCoupon()"
+                                            style="border-radius:8px;font-size:0.78rem;">
+                                        Xoá
+                                    </button>
+                                </div>
+                                <div id="couponResult" class="d-none alert py-2 small mt-2 mb-0"></div>
+                            </div>
+                        </div>
 
                         <!-- Khách hàng -->
                         <div class="card-ui p-4">
@@ -335,9 +392,13 @@
                                     <span class="opacity-90">Tạm tính:</span>
                                     <span id="subtotalAmount">0 đ</span>
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center mb-3" id="discountRow" style="display:none!important">
-                                    <span class="opacity-90">Giảm giá:</span>
+                                <div class="d-flex justify-content-between align-items-center mb-1" id="discountRow" style="display:none!important">
+                                    <span class="opacity-90">Giảm SALE:</span>
                                     <span class="fw-semibold" id="discountAmount" style="color:#fbbf24">- 0 đ</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3" id="couponDiscountRow" style="display:none!important">
+                                    <span class="opacity-90">Giảm mã KM:</span>
+                                    <span class="fw-semibold" id="couponDiscountAmount" style="color:#fbbf24">- 0 đ</span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <span class="fs-5 fw-semibold">Tổng tiền:</span>
@@ -357,9 +418,9 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════
+    <!-- ════════════════════════════════════════════════════════
          MODAL THANH TOÁN
-    ══════════════════════════════════════════════════════ -->
+    ════════════════════════════════════════════════════════ -->
     <div class="modal fade" id="checkoutModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content" style="border-radius:20px;border:none;">
@@ -371,7 +432,7 @@
                 <div class="modal-body p-4">
                     <div class="row g-4">
                         <!-- Tóm tắt đơn hàng -->
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <h6 class="fw-bold mb-3 text-muted">📋 Tóm tắt đơn hàng</h6>
                             <div id="receiptItems" class="mb-3"></div>
 
@@ -380,8 +441,12 @@
                                 <span id="modalSubtotal">0 đ</span>
                             </div>
                             <div class="d-flex justify-content-between text-warning fw-semibold mb-1 d-none" id="modalDiscountRow">
-                                <span>Giảm giá SALE:</span>
+                                <span>Giảm SALE:</span>
                                 <span id="modalDiscount">- 0 đ</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-semibold mb-1 d-none" id="modalCouponRow" style="color:#f59e0b">
+                                <span>Mã KM:</span>
+                                <span id="modalCouponDiscount">- 0 đ</span>
                             </div>
                             <div class="d-flex justify-content-between fw-bold fs-5 border-top pt-2" style="color:#dc2626">
                                 <span>Tổng cộng:</span>
@@ -390,7 +455,7 @@
                         </div>
 
                         <!-- Phương thức thanh toán -->
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                             <h6 class="fw-bold mb-3 text-muted">💰 Phương thức thanh toán</h6>
 
                             <div class="d-flex flex-column gap-2 mb-3">
@@ -423,11 +488,18 @@
                                 </div>
                             </div>
 
-                            <!-- Thẻ section -->
+                            <!-- Thẻ / QR section -->
                             <div id="cardSection" class="d-none">
-                                <div class="alert alert-info d-flex align-items-center gap-2 mb-0">
-                                    <span style="font-size:1.3rem">ℹ️</span>
-                                    <div class="small">Yêu cầu khách quẹt thẻ / chuyển khoản theo QR. Xác nhận sau khi nhận được tiền.</div>
+                                <div class="qr-wrapper">
+                                    <div class="small text-muted mb-2 fw-semibold">Số tiền cần chuyển</div>
+                                    <div class="qr-amount-badge" id="qrAmount">0 đ</div>
+                                    <div id="qrCodeContainer" style="min-height:80px;display:flex;align-items:center;justify-content:center;">
+                                        <div class="text-muted small">Đang tạo mã QR...</div>
+                                    </div>
+                                    <div class="qr-bank-info mt-2">
+                                        <div class="text-muted small mb-1">📌 Hướng dẫn:</div>
+                                        <div class="small">Mở app ngân hàng → Quét QR → Kiểm tra số tiền → Xác nhận chuyển khoản → Bấm <strong>"Xác nhận thanh toán"</strong></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -444,7 +516,6 @@
         </div>
     </div>
 
-    <!-- html5-qrcode -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="assets/js/app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
