@@ -64,7 +64,7 @@ namespace WebApplication1.Controllers
                 {
                     id = user.Id,
                     hoTen = user.HoTen,
-                    vaiTro = user.ChucVu
+                    vaiTro = user.VaiTro
                 });
             }
             return Unauthorized(new { message = "Sai tài khoản hoặc mật khẩu!" });

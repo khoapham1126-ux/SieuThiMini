@@ -45,9 +45,7 @@ function renderUserInfo() {
 }
 
 function logout() {
-    localStorage.removeItem("staffName");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("staffId");
+    localStorage.clear();
     window.location.href = "login.html";
 }
 
@@ -67,7 +65,7 @@ async function loadKhuyenMai() {
         
         tbody.innerHTML = data.map(km => `
             <tr>
-                <td><span class="fw-bold">${km.tenKhuyenMai}</span></td>
+                <td><span class="fw-bold">${km.ten}</span></td>
                 <td><span class="badge bg-danger">-${km.phanTramGiam}%</span></td>
                 <td>${new Date(km.ngayBatDau).toLocaleDateString()} - ${new Date(km.ngayKetThuc).toLocaleDateString()}</td>
                 <td><button onclick="deleteKM(${km.id})" class="btn btn-sm btn-outline-danger">Xóa</button></td>
@@ -81,11 +79,11 @@ async function loadKhuyenMai() {
 document.getElementById('formKhuyenMai')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const body = {
-        tenKhuyenMai: document.getElementById('tenKM').value,
+        ten: document.getElementById('tenKM').value,
         phanTramGiam: parseInt(document.getElementById('phanTram').value),
         ngayBatDau: document.getElementById('ngayBD').value,
         ngayKetThuc: document.getElementById('ngayKT').value,
-        dieuKien: ""
+        dieuKienApDung: ""
     };
 
     const res = await fetch('/api/KhuyenMai', {
