@@ -17,40 +17,7 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            return Ok(await _context.NhanViens.ToListAsync());
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Create(NhanVien nhanVien)
-        {
-            _context.NhanViens.Add(nhanVien);
-            await _context.SaveChangesAsync();
-            return Ok(nhanVien);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
-        {
-            var nv = await _context.NhanViens.FindAsync(id);
-            if (nv == null) return NotFound(new { message = "Không tìm thấy nhân viên!" });
-            return Ok(nv);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, NhanVien nhanVien)
-        {
-            if (id != nhanVien.Id) return BadRequest(new { message = "ID không khớp!" });
-            _context.Entry(nhanVien).State = EntityState.Modified;
-            try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.NhanViens.Any(e => e.Id == id)) return NotFound(new { message = "Nhân viên không tồn tại!" });
-                throw;
-            }
-            return Ok(new { message = "Cập nhật thành công!" });
-        }
+        public async Task<IActionResult> GetAll() => Ok(await _context.NhanViens.ToListAsync());
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
