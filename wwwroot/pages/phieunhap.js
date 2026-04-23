@@ -1,43 +1,45 @@
 ﻿/**
  * phieunhap.js — Trang nhập hàng
+ * Đặt trong: wwwroot/pages/phieunhap.js
  *
  * API:
- *   GET  /api/NhaCungCap  → { id, ten, diaChi, soDienThoai, email }
- *   GET  /api/SanPham     → { maSanPham, tenSanPham, maVach, giaBan, giaVon, ... }
- *   POST /api/PhieuNhap?sanPhamId=...&soLuong=...
+ *   GET  /api/NhaCungCap
+ *   GET  /api/SanPham
  *   GET  /api/PhieuNhap
+ *   GET  /api/PhieuNhap/{id}/chitiet
+ *   POST /api/PhieuNhap  body: PhieuNhapRequest
  */
 
+const LOAI_DON_VI = ["Cái", "Thùng", "Hộp", "Kg", "Lít", "Gói", "Bộ"];
+
+let dsSanPham = [];   // cache sản phẩm từ API
+let soThuTu = 0;    // đếm id dòng SP
+
+// ── KHỞI ĐỘNG ────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
-    setDefaultNgayNhap();
     loadNhaCungCap();
     loadSanPham();
     loadLichSu();
+    themDongSP(); // thêm 1 dòng sản phẩm mặc định
 });
-
-// ── SET NGÀY NHẬP MẶC ĐỊNH = BÂY GIỜ ────────────────────────
-function setDefaultNgayNhap() {
-    const now = new Date();
-    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-        .toISOString().slice(0, 16);
-    document.getElementById("ngayNhap").value = local;
-}
 
 // ── LOAD NHÀ CUNG CẤP ────────────────────────────────────────
 async function loadNhaCungCap() {
     const sel = document.getElementById("nhaCungCapId");
     try {
         const res = await fetch("/api/NhaCungCap");
-        if (!res.ok) throw new Error();
         const data = await res.json();
-
         if (!data || data.length === 0) {
             sel.innerHTML = `<option value="">-- Chưa có nhà cung cấp --</option>`;
             return;
         }
         sel.innerHTML = `<option value="">-- Chọn nhà cung cấp --</option>` +
-            data.map(n => `<option value="${n.id}">${n.ten ?? n.Ten ?? "(không tên)"}</option>`).join("");
+            data.map(n => `<option value="${n.id}">${n.ten || n.Ten || n.tenNhaCungCap || "NCC #" + n.id}</option>`).join("");
 
+        // Khi đổi NCC → cập nhật lại tất cả dropdown SP
+        sel.addEventListener("change", () => {
+            document.querySelectorAll(".sp-select").forEach(s => fillSPOptions(s));
+        });
     } catch {
         sel.innerHTML = `<option value="">-- Lỗi tải nhà cung cấp --</option>`;
     }
@@ -45,84 +47,171 @@ async function loadNhaCungCap() {
 
 // ── LOAD SẢN PHẨM ────────────────────────────────────────────
 async function loadSanPham() {
-    const sel = document.getElementById("sanPhamId");
     try {
         const res = await fetch("/api/SanPham");
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-
-        if (!data || data.length === 0) {
-            sel.innerHTML = `<option value="">-- Chưa có sản phẩm --</option>`;
-            return;
-        }
-
-        sel.innerHTML = `<option value="">-- Chọn sản phẩm --</option>` +
-            data.map(p => `<option value="${p.maSanPham}" data-gia="${p.giaVon}">
-                ${p.tenSanPham}
-            </option>`).join("");
-
+        dsSanPham = await res.json();
+        // Cập nhật tất cả dropdown SP đang có
+        document.querySelectorAll(".sp-select").forEach(sel => fillSPOptions(sel));
     } catch {
-        sel.innerHTML = `<option value="">-- Lỗi tải sản phẩm --</option>`;
+        dsSanPham = [];
     }
 }
 
-// ── KHI CHỌN SẢN PHẨM → tự điền giaVon vào đơn giá ─────────
-function onSanPhamChange() {
-    const sel = document.getElementById("sanPhamId");
+function fillSPOptions(sel) {
+    const currentVal = sel.value;
+    const nccId = parseInt(document.getElementById("nhaCungCapId")?.value) || 0;
+
+    // Lọc SP theo NCC nếu đã chọn NCC, nếu chưa chọn thì hiện tất cả
+    const dsDuLoc = nccId
+        ? dsSanPham.filter(p => p.maNhaCungCap === nccId)
+        : dsSanPham;
+
+    sel.innerHTML = `<option value="">-- Chọn sản phẩm --</option>` +
+        dsDuLoc.map(p =>
+            `<option value="${p.maSanPham}" data-giavon="${p.giaVon}">${p.tenSanPham}</option>`
+        ).join("");
+    if (currentVal) sel.value = currentVal;
+}
+
+// ── THÊM DÒNG SẢN PHẨM ───────────────────────────────────────
+function themDongSP() {
+    soThuTu++;
+    const id = soThuTu;
+    const div = document.createElement("div");
+    div.className = "sp-row";
+    div.id = `sp-row-${id}`;
+
+    div.innerHTML = `
+        <button class="btn-remove-sp" onclick="xoaDongSP(${id})" title="Xoá">✕</button>
+        <div class="row g-2">
+            <!-- Sản phẩm -->
+            <div class="col-md-12 mb-1">
+                <label class="form-label mb-1">Sản phẩm</label>
+                <select class="form-select form-select-sm sp-select" id="sp-id-${id}"
+                        onchange="onChonSP(${id})">
+                    <option value="">-- Chọn sản phẩm --</option>
+                </select>
+            </div>
+            <!-- Số lượng -->
+            <div class="col-4">
+                <label class="form-label mb-1">Số lượng</label>
+                <input type="number" class="form-control form-control-sm sp-soluong"
+                       id="sp-sl-${id}" min="1" placeholder="0" oninput="tinhTongTien()">
+            </div>
+            <!-- Giá nhập -->
+            <div class="col-4">
+                <label class="form-label mb-1">Giá nhập (đ)</label>
+                <input type="number" class="form-control form-control-sm sp-dongia"
+                       id="sp-gia-${id}" min="0" placeholder="0" oninput="tinhTongTien()">
+            </div>
+            <!-- Loại đơn vị -->
+            <div class="col-4">
+                <label class="form-label mb-1">Đơn vị</label>
+                <input type="text" class="form-control form-control-sm"
+                       id="sp-donvi-${id}" placeholder="Cái, Kg, Lít...">
+            </div>
+            <!-- Hạn sử dụng -->
+            <div class="col-6 mt-1">
+                <label class="form-label mb-1">Hạn sử dụng <span class="text-danger">*</span></label>
+                <input type="date" class="form-control form-control-sm sp-han" id="sp-han-${id}">
+            </div>
+            <!-- Thành tiền -->
+            <div class="col-6 mt-1 d-flex align-items-end">
+                <div class="w-100 text-end">
+                    <span class="text-muted small">Thành tiền: </span>
+                    <span class="fw-bold text-danger sp-thanhtien" id="sp-tt-${id}">0đ</span>
+                </div>
+            </div>
+        </div>`;
+
+    document.getElementById("spList").appendChild(div);
+    fillSPOptions(document.getElementById(`sp-id-${id}`));
+}
+
+function xoaDongSP(id) {
+    const row = document.getElementById(`sp-row-${id}`);
+    if (row) row.remove();
+    tinhTongTien();
+}
+
+// ── KHI CHỌN SẢN PHẨM → tự điền giaVon ──────────────────────
+function onChonSP(id) {
+    const sel = document.getElementById(`sp-id-${id}`);
     const opt = sel.options[sel.selectedIndex];
-    const gia = opt ? (opt.getAttribute("data-gia") || 0) : 0;
+    const gia = opt ? (opt.getAttribute("data-giavon") || 0) : 0;
     if (gia > 0) {
-        document.getElementById("donGia").value = gia;
+        document.getElementById(`sp-gia-${id}`).value = gia;
         tinhTongTien();
     }
 }
 
 // ── TÍNH TỔNG TIỀN ───────────────────────────────────────────
 function tinhTongTien() {
-    const soLuong = parseInt(document.getElementById("soLuong").value) || 0;
-    const donGia = parseInt(document.getElementById("donGia").value) || 0;
-    const tong = soLuong * donGia;
+    let tong = 0;
+    document.querySelectorAll(".sp-row").forEach(row => {
+        const id = row.id.replace("sp-row-", "");
+        const sl = parseInt(document.getElementById(`sp-sl-${id}`)?.value) || 0;
+        const gia = parseInt(document.getElementById(`sp-gia-${id}`)?.value) || 0;
+        const tt = sl * gia;
+        tong += tt;
+        const ttEl = document.getElementById(`sp-tt-${id}`);
+        if (ttEl) ttEl.textContent = tt.toLocaleString("vi-VN") + "đ";
+    });
     document.getElementById("tongTienHienThi").textContent = tong.toLocaleString("vi-VN") + "đ";
-    return tong;
 }
 
 // ── SUBMIT PHIẾU NHẬP ────────────────────────────────────────
 async function submitPhieuNhap() {
-    const sanPhamId = parseInt(document.getElementById("sanPhamId").value);
-    const soLuong = parseInt(document.getElementById("soLuong").value);
-    const donGia = parseInt(document.getElementById("donGia").value);
     const nhaCungCapId = parseInt(document.getElementById("nhaCungCapId").value);
-    const ngayNhap = document.getElementById("ngayNhap").value;
     const nhanVienId = parseInt(localStorage.getItem("nhanVienId") || "1");
 
-    if (!sanPhamId) return showAlert("danger", "Vui lòng chọn sản phẩm!");
-    if (!soLuong || soLuong < 1) return showAlert("danger", "Số lượng phải lớn hơn 0!");
-    if (!donGia || donGia < 1) return showAlert("danger", "Đơn giá phải lớn hơn 0!");
     if (!nhaCungCapId) return showAlert("danger", "Vui lòng chọn nhà cung cấp!");
 
-    const tongTien = soLuong * donGia;
+    // Thu thập danh sách sản phẩm
+    const chiTiet = [];
+    let valid = true;
+
+    document.querySelectorAll(".sp-row").forEach(row => {
+        if (!valid) return;
+        const id = row.id.replace("sp-row-", "");
+        const spId = parseInt(document.getElementById(`sp-id-${id}`)?.value);
+        const soLuong = parseInt(document.getElementById(`sp-sl-${id}`)?.value);
+        const giaNhap = parseInt(document.getElementById(`sp-gia-${id}`)?.value);
+        const han = document.getElementById(`sp-han-${id}`)?.value;
+        const donVi = document.getElementById(`sp-donvi-${id}`)?.value || "Cái";
+
+        if (!spId) { showAlert("danger", "Vui lòng chọn sản phẩm cho tất cả các dòng!"); valid = false; return; }
+        if (!soLuong || soLuong < 1) { showAlert("danger", "Số lượng phải lớn hơn 0!"); valid = false; return; }
+        if (!giaNhap || giaNhap < 1) { showAlert("danger", "Giá nhập phải lớn hơn 0!"); valid = false; return; }
+        if (!han) { showAlert("danger", "Vui lòng nhập hạn sử dụng!"); valid = false; return; }
+
+        chiTiet.push({
+            sanPhamId: spId,
+            soLuong: soLuong,
+            giaNhap: giaNhap,
+            hanSuDung: new Date(han).toISOString(),
+            loaiDonVi: donVi
+        });
+    });
+
+    if (!valid) return;
+    if (chiTiet.length === 0) return showAlert("danger", "Vui lòng thêm ít nhất 1 sản phẩm!");
+
     const btn = document.getElementById("btnNhap");
     btn.disabled = true;
     btn.textContent = "Đang xử lý...";
 
     try {
-        const url = `/api/PhieuNhap?sanPhamId=${sanPhamId}&soLuong=${soLuong}`;
-
-        const res = await fetch(url, {
+        const res = await fetch("/api/PhieuNhap", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                id: 0,
-                ngayNhap: new Date(ngayNhap).toISOString(),
-                tongTien: tongTien,
-                nhaCungCapId: nhaCungCapId,
-                nhanVienId: nhanVienId
-            })
+            body: JSON.stringify({ nhaCungCapId, nhanVienId, chiTiet })
         });
 
-        if (!res.ok) throw new Error(`Lỗi ${res.status}`);
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.message || `Lỗi ${res.status}`);
 
-        showAlert("success", "✅ Nhập hàng thành công! Tồn kho đã được cập nhật.");
+        showAlert("success", `✅ Tạo phiếu nhập #${result.phieuNhapId} thành công! Tổng tiền: ${Number(result.tongTien).toLocaleString("vi-VN")}đ`);
         resetForm();
         loadLichSu();
 
@@ -143,30 +232,98 @@ async function loadLichSu() {
         const data = await res.json();
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">Chưa có phiếu nhập</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Chưa có phiếu nhập</td></tr>`;
             return;
         }
 
-        const recent = [...data].reverse().slice(0, 10);
-        tbody.innerHTML = recent.map(p => `
+        tbody.innerHTML = data.slice(0, 10).map(p => `
             <tr>
                 <td class="text-muted small">#${p.id}</td>
                 <td class="small">${formatDate(p.ngayNhap)}</td>
-                <td class="text-end fw-semibold">${(p.tongTien || 0).toLocaleString("vi-VN")}đ</td>
+                <td class="text-end fw-semibold">${Number(p.tongTien || 0).toLocaleString("vi-VN")}đ</td>
+                <td class="text-center">
+                    <button class="btn-chitiet" onclick="xemChiTiet(${p.id})">Xem</button>
+                </td>
             </tr>`).join("");
 
     } catch {
-        tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">Không tải được lịch sử</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Không tải được lịch sử</td></tr>`;
+    }
+}
+
+// ── XEM CHI TIẾT PHIẾU NHẬP ──────────────────────────────────
+async function xemChiTiet(id) {
+    document.getElementById("modalTitle").textContent = `Chi tiết phiếu nhập #${id}`;
+    document.getElementById("modalBody").innerHTML = `<div class="text-center text-muted py-4">Đang tải...</div>`;
+
+    const modal = new bootstrap.Modal(document.getElementById("modalChiTiet"));
+    modal.show();
+
+    try {
+        const res = await fetch(`/api/PhieuNhap/${id}/chitiet`);
+        if (!res.ok) throw new Error(`Lỗi ${res.status}`);
+        const data = await res.json();
+
+        const { phieu, chiTiet } = data;
+
+        document.getElementById("modalBody").innerHTML = `
+            <!-- Thông tin phiếu -->
+            <div class="row g-2 mb-3 p-3" style="background:#f9fafb;border-radius:10px">
+                <div class="col-6">
+                    <div class="text-muted small">Ngày nhập</div>
+                    <div class="fw-semibold">${formatDate(phieu.ngayNhap)}</div>
+                </div>
+                <div class="col-6">
+                    <div class="text-muted small">Tổng tiền</div>
+                    <div class="fw-bold text-danger">${Number(phieu.tongTien || 0).toLocaleString("vi-VN")}đ</div>
+                </div>
+            </div>
+
+            <!-- Danh sách sản phẩm -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 table-modern">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-end">Thành tiền</th>
+                            <th class="text-center">Lô hàng</th>
+                            <th class="text-center">Hạn SD</th>
+                            <th class="text-center">Đơn vị</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${chiTiet.map(c => `
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">${c.tenSanPham || "—"}</div>
+                                <div class="text-muted small">SP #${c.sanPhamId}</div>
+                            </td>
+                            <td class="text-center">${c.soLuong}</td>
+                            <td class="text-end">${Number(c.donGia).toLocaleString("vi-VN")}đ</td>
+                            <td class="text-end fw-semibold text-danger">${Number(c.thanhTien).toLocaleString("vi-VN")}đ</td>
+                            <td class="text-center text-muted small">${c.loHang ? `#${c.loHang.id}` : "—"}</td>
+                            <td class="text-center small">${c.loHang ? formatDate(c.loHang.hanSuDung) : "—"}</td>
+                            <td class="text-center small">${c.loHang?.loaiDonVi || "—"}</td>
+                        </tr>`).join("")}
+                    </tbody>
+                </table>
+            </div>`;
+
+    } catch (err) {
+        document.getElementById("modalBody").innerHTML =
+            `<div class="text-center text-danger py-4">Không tải được chi tiết: ${err.message}</div>`;
     }
 }
 
 // ── RESET FORM ───────────────────────────────────────────────
 function resetForm() {
-    document.getElementById("sanPhamId").value = "";
-    document.getElementById("soLuong").value = "";
-    document.getElementById("donGia").value = "";
+    document.getElementById("nhaCungCapId").value = "";
+    document.getElementById("spList").innerHTML = "";
     document.getElementById("tongTienHienThi").textContent = "0đ";
-    setDefaultNgayNhap();
+    soThuTu = 0;
+    themDongSP(); // thêm lại 1 dòng trống
 }
 
 // ── HELPERS ──────────────────────────────────────────────────
@@ -175,12 +332,10 @@ function showAlert(type, msg) {
     el.className = `alert alert-${type}`;
     el.textContent = msg;
     el.classList.remove("d-none");
-    setTimeout(() => el.classList.add("d-none"), 4000);
+    setTimeout(() => el.classList.add("d-none"), 5000);
 }
 
 function formatDate(str) {
     if (!str) return "—";
-    const d = new Date(str);
-    return d.toLocaleDateString("vi-VN") + " " +
-        d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+    return new Date(str).toLocaleDateString("vi-VN");
 }
