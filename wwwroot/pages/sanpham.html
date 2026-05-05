@@ -1,0 +1,332 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản Phẩm - Siêu Thị Mini</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/app.css">
+    <style>
+        .filter-bar input:focus, .filter-bar select:focus {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220,38,38,0.12);
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #374151;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220,38,38,0.12);
+        }
+
+        .btn-them {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 8px 20px;
+            border-radius: 10px;
+        }
+
+            .btn-them:hover {
+                opacity: 0.9;
+                color: white;
+            }
+
+            .btn-them:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+        .badge-active {
+            background: #16a34a;
+        }
+
+        .badge-inactive {
+            background: #6b7280;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: white;
+        }
+
+            .modal-header .btn-close {
+                filter: invert(1);
+            }
+
+        .product-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+            .product-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar p-3">
+            <div class="brand mb-4">
+                Siêu Thị Mini
+                <small>Management Dashboard</small>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="pos.html">Bán hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="donhang.html">Đơn hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="tonkho.html">Tồn kho</a></li>
+                <li class="nav-item"><a class="nav-link" href="phieunhap.html">Nhập hàng</a></li>
+                <li class="nav-item"><a class="nav-link active" href="sanpham.html">Sản phẩm</a></li>
+                <li class="nav-item"><a class="nav-link" href="nhanvien.html">Nhân viên</a></li>
+                <li class="nav-item"><a class="nav-link" href="khachhang.html">Khách hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="nhacc.html">Nhà cung cấp</a></li>
+                <li class="nav-item"><a class="nav-link" href="canhbao.html">Cảnh báo</a></li>
+                <li class="nav-item mt-2"><a class="nav-link text-danger" href="#" onclick="logout()">Đăng xuất</a></li>
+            </ul>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar d-flex justify-content-between align-items-center">
+                <div>
+                    <h5>Sản Phẩm</h5>
+                    <div class="text-muted small">Danh sách và quản lý sản phẩm</div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn-them" onclick="moModalThem()">+ Thêm sản phẩm</button>
+                    <div class="user-chip">
+                        <div class="avatar" id="userAvatar">K</div>
+                        <div>
+                            <div class="small text-muted">Xin chào</div>
+                            <div class="fw-semibold" id="staffName">Nhân viên</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-content">
+
+                <!-- Thống kê -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <div class="card-ui p-3 text-center">
+                            <div class="text-muted small">Tổng sản phẩm</div>
+                            <h4 class="mb-0 fw-bold" id="statTotal">...</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card-ui p-3 text-center">
+                            <div class="text-muted small">Đang kinh doanh</div>
+                            <h4 class="mb-0 fw-bold text-success" id="statActive">...</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card-ui p-3 text-center">
+                            <div class="text-muted small">Ngừng kinh doanh</div>
+                            <h4 class="mb-0 fw-bold text-danger" id="statInactive">...</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card-ui p-3 text-center">
+                            <div class="text-muted small">Số danh mục</div>
+                            <h4 class="mb-0 fw-bold text-primary" id="statDanhMuc">...</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bộ lọc -->
+                <div class="card-ui p-3 mb-3 filter-bar">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="searchInput"
+                                   placeholder="Tìm tên hoặc mã vạch..." oninput="filterSP()">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="danhMucFilter" onchange="filterSP()">
+                                <option value="">-- Tất cả danh mục --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="statusFilter" onchange="filterSP()">
+                                <option value="">-- Tất cả trạng thái --</option>
+                                <option value="active">Đang kinh doanh</option>
+                                <option value="inactive">Ngừng kinh doanh</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button class="btn btn-outline-secondary w-100" onclick="resetFilter()">Xoá</button>
+                        </div>
+                        <div class="col-md-2 text-end text-muted small">
+                            Hiển thị: <strong id="visibleCount">—</strong> SP
+                        </div>
+                    </div>
+                </div>
+
+                <div id="spAlert" class="alert d-none mb-3"></div>
+
+                <!-- Bảng sản phẩm -->
+                <div class="table-responsive table-modern">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Mã SP</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Mã vạch</th>
+                                <th>Danh mục</th>
+                                <th>Đơn vị tính</th>
+                                <th class="text-end">Giá vốn</th>
+                                <th class="text-end">Giá bán</th>
+                                <th class="text-center">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="spBody">
+                            <tr><td colspan="8" class="text-center py-4 text-muted">Đang tải dữ liệu...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-muted small mt-2" id="filterInfo"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal thêm sản phẩm -->
+    <div class="modal fade" id="modalThem" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thêm sản phẩm mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalAlert" class="alert d-none mb-3"></div>
+
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs mb-3" id="modalTabs">
+                        <li class="nav-item">
+                            <button class="nav-link active" id="tab-sp" onclick="chuyenTab('sp')">Thêm sản phẩm</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="tab-dm" onclick="chuyenTab('dm')">Quản lý danh mục</button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Sản phẩm -->
+                    <div id="panel-sp">
+                        <div class="row g-3">
+
+                            <!-- Tên sản phẩm -->
+                            <div class="col-md-8">
+                                <label class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="f-ten" placeholder="Nhập tên sản phẩm...">
+                            </div>
+
+                            <!-- Mã vạch -->
+                            <div class="col-md-4">
+                                <label class="form-label">Mã vạch</label>
+                                <input type="text" class="form-control" id="f-mavach" placeholder="VD: 8934673123456">
+                            </div>
+
+                            <!-- Danh mục -->
+                            <div class="col-md-6">
+                                <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+                                <select class="form-select" id="f-danhmuc">
+                                    <option value="">-- Chọn danh mục --</option>
+                                </select>
+                            </div>
+
+                            <!-- Nhà cung cấp -->
+                            <div class="col-md-6">
+                                <label class="form-label">Nhà cung cấp <span class="text-danger">*</span></label>
+                                <select class="form-select" id="f-ncc">
+                                    <option value="">-- Chọn nhà cung cấp --</option>
+                                </select>
+                            </div>
+
+                            <!-- Giá vốn -->
+                            <div class="col-md-4">
+                                <label class="form-label">Giá vốn (đ) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="f-giavon" min="0" placeholder="0">
+                            </div>
+
+                            <!-- Giá bán -->
+                            <div class="col-md-4">
+                                <label class="form-label">Giá bán (đ) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="f-giaban" min="0" placeholder="0">
+                            </div>
+
+                            <!-- Đơn vị tính -->
+                            <div class="col-md-4">
+                                <label class="form-label">Đơn vị tính</label>
+                                <input type="text" class="form-control" id="f-donvi"
+                                       placeholder="VD: Thùng,Hộp,Cái (cách nhau bằng dấu phẩy)">
+                            </div>
+
+                            <!-- Trạng thái -->
+                            <div class="col-md-12">
+                                <div class="form-check form-switch mt-1">
+                                    <input class="form-check-input" type="checkbox" id="f-trangthai" checked>
+                                    <label class="form-check-label fw-semibold" for="f-trangthai">
+                                        Đang kinh doanh
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div><!-- /panel-sp -->
+                    <!-- Tab Danh mục -->
+                    <div id="panel-dm" class="d-none">
+                        <div id="dmAlert" class="alert d-none mb-3"></div>
+
+                        <!-- Form thêm danh mục -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-5">
+                                <label class="form-label">Tên danh mục <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="f-dm-ten" placeholder="Nhập tên danh mục...">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">Mô tả</label>
+                                <input type="text" class="form-control" id="f-dm-mota" placeholder="Mô tả (tuỳ chọn)...">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn-them w-100" onclick="luuDanhMuc()">Thêm</button>
+                            </div>
+                        </div>
+
+                        <!-- Danh sách danh mục -->
+                        <div class="table-responsive table-modern">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên danh mục</th>
+                                        <th>Mô tả</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dmBody">
+                                    <tr><td colspan="3" class="text-center text-muted py-3">Đang tải...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div><!-- /panel-dm -->
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Huỷ</button>
+                    <button class="btn btn-outline-danger me-auto" onclick="chuyenTabDanhMuc()">+ Thêm danh mục</button>
+                    <button class="btn-them" id="btnLuu" onclick="luuSanPham()">Lưu sản phẩm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sanpham.js"></script>
+</body>
+</html>

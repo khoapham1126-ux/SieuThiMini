@@ -1,14 +1,4 @@
-﻿/**
- * phieunhap.js — Trang nhập hàng
- * Đặt trong: wwwroot/pages/phieunhap.js
- *
- * API:
- *   GET  /api/NhaCungCap
- *   GET  /api/SanPham
- *   GET  /api/PhieuNhap
- *   GET  /api/PhieuNhap/{id}/chitiet
- *   POST /api/PhieuNhap  body: PhieuNhapRequest
- */
+﻿
 
 const LOAI_DON_VI = ["Cái", "Thùng", "Hộp", "Kg", "Lít", "Gói", "Bộ"];
 
@@ -68,7 +58,7 @@ function fillSPOptions(sel) {
 
     sel.innerHTML = `<option value="">-- Chọn sản phẩm --</option>` +
         dsDuLoc.map(p =>
-            `<option value="${p.maSanPham}" data-giavon="${p.giaVon}">${p.tenSanPham}</option>`
+            `<option value="${p.maSanPham}" data-giavon="${p.giaVon}" data-donvi="${p.donViTinh || ''}">${p.tenSanPham}</option>`
         ).join("");
     if (currentVal) sel.value = currentVal;
 }
@@ -107,8 +97,9 @@ function themDongSP() {
             <!-- Loại đơn vị -->
             <div class="col-4">
                 <label class="form-label mb-1">Đơn vị</label>
-                <input type="text" class="form-control form-control-sm"
-                       id="sp-donvi-${id}" placeholder="Cái, Kg, Lít...">
+                <select class="form-select form-select-sm" id="sp-donvi-${id}">
+                    <option value="">-- Chọn SP trước --</option>
+                </select>
             </div>
             <!-- Hạn sử dụng -->
             <div class="col-6 mt-1">
@@ -134,14 +125,27 @@ function xoaDongSP(id) {
     tinhTongTien();
 }
 
-// ── KHI CHỌN SẢN PHẨM → tự điền giaVon ──────────────────────
+// ── KHI CHỌN SẢN PHẨM → tự điền giaVon + build dropdown donViTinh ──
 function onChonSP(id) {
     const sel = document.getElementById(`sp-id-${id}`);
     const opt = sel.options[sel.selectedIndex];
     const gia = opt ? (opt.getAttribute("data-giavon") || 0) : 0;
+    const donVi = opt ? (opt.getAttribute("data-donvi") || "") : "";
+
     if (gia > 0) {
         document.getElementById(`sp-gia-${id}`).value = gia;
         tinhTongTien();
+    }
+
+    // Split "Thùng,Hộp,Cái" → dropdown
+    const donViEl = document.getElementById(`sp-donvi-${id}`);
+    if (donViEl) {
+        const dsdonVi = donVi.split(",").map(v => v.trim()).filter(v => v);
+        if (dsdonVi.length > 0) {
+            donViEl.innerHTML = dsdonVi.map(v => `<option value="${v}">${v}</option>`).join("");
+        } else {
+            donViEl.innerHTML = `<option value="">-- Không có đơn vị --</option>`;
+        }
     }
 }
 
