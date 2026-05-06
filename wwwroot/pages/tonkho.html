@@ -35,6 +35,14 @@
             background: #16a34a;
         }
 
+        .badge-sap-het-hang {
+            background: #d97706;
+        }
+
+        .badge-het-hang {
+            background: #dc2626;
+        }
+
         .badge-sap-het-han {
             background: #d97706;
             animation: pulse 1.8s ease-in-out infinite;
@@ -49,11 +57,6 @@
             background: #6b7280;
         }
 
-        .qty-low {
-            color: #dc2626;
-            font-weight: 700;
-        }
-
         @keyframes pulse {
             0%, 100% {
                 opacity: 1;
@@ -64,37 +67,15 @@
             }
         }
 
-        .qty-bar-wrap {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .summary-tabs .nav-link {
+            color: #374151;
+            font-weight: 600;
         }
 
-        .qty-bar {
-            flex: 1;
-            min-width: 50px;
-            height: 6px;
-            background: #f3f4f6;
-            border-radius: 99px;
-            overflow: hidden;
-        }
-
-        .qty-bar-fill {
-            height: 100%;
-            border-radius: 99px;
-        }
-
-        .bar-ok {
-            background: linear-gradient(90deg, #4ade80, #16a34a);
-        }
-
-        .bar-mid {
-            background: linear-gradient(90deg, #fb923c, #ea580c);
-        }
-
-        .bar-low {
-            background: linear-gradient(90deg, #f87171, #dc2626);
-        }
+            .summary-tabs .nav-link.active {
+                background: #dc2626;
+                color: #fff;
+            }
     </style>
 </head>
 <body>
@@ -122,8 +103,8 @@
         <div class="main-content">
             <header class="topbar d-flex justify-content-between align-items-center">
                 <div>
-                    <h5>Tồn Kho theo Lô</h5>
-                    <div class="text-muted small">Theo dõi từng lô hàng trong kho</div>
+                    <h5>Tồn Kho</h5>
+                    <div class="text-muted small">Theo dõi tồn kho theo lô và tổng hợp theo sản phẩm</div>
                 </div>
                 <div class="user-chip">
                     <div class="avatar" id="userAvatar">K</div>
@@ -135,7 +116,6 @@
             </header>
 
             <main class="page-content">
-
                 <!-- Thống kê nhanh -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-3">
@@ -164,8 +144,43 @@
                     </div>
                 </div>
 
-                <!-- Bộ lọc -->
-                <div class="card-ui p-3 mb-3 filter-bar">
+                <!-- Tabs -->
+                <ul class="nav nav-pills summary-tabs mb-3">
+                    <li class="nav-item me-2">
+                        <button class="nav-link active" id="btnTabTongHop" onclick="showTab('tonghop')">
+                            Tổng hợp theo sản phẩm
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="btnTabTheoLo" onclick="showTab('theolo')">
+                            Theo lô
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Bộ lọc tổng hợp -->
+                <div id="filterTongHop" class="card-ui p-3 mb-3 filter-bar">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="searchTongHop"
+                                   placeholder="Tìm tên sản phẩm..." oninput="filterTongHop()">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="tongHopWarningFilter" onchange="filterTongHop()">
+                                <option value="">-- Tất cả cảnh báo --</option>
+                                <option value="ok">Bình thường</option>
+                                <option value="sap">Sắp hết</option>
+                                <option value="het">Hết hàng</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary w-100" onclick="resetTongHopFilter()">Xoá lọc</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bộ lọc theo lô -->
+                <div id="filterTheoLo" class="card-ui p-3 mb-3 filter-bar d-none">
                     <div class="row g-2 align-items-center">
                         <div class="col-md-2">
                             <input type="text" class="form-control" id="searchMaLo"
@@ -195,26 +210,49 @@
 
                 <div id="inventoryAlert" class="alert alert-danger d-none"></div>
 
-                <!-- Bảng tồn kho theo lô -->
-                <div class="table-responsive table-modern">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Mã lô</th>
-                                <th>Mã SP</th>
-                                <th>Tên sản phẩm</th>
-                                <th>Ngày nhập</th>
-                                <th>Hạn sử dụng</th>
-                                <th class="text-end">Giá nhập</th>
-                                <th>Số lượng</th>
-                                <th>Đơn vị</th>
-                                <th class="text-center">Tình trạng</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventoryBody">
-                            <tr><td colspan="9" class="text-center py-4 text-muted">Đang tải dữ liệu...</td></tr>
-                        </tbody>
-                    </table>
+                <!-- Tổng hợp theo sản phẩm -->
+                <div id="tongHopPanel">
+                    <div class="table-responsive table-modern">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Mã SP</th>
+                                    <th>Sản phẩm</th>
+                                    <th class="text-end">Tổng tồn</th>
+                                    <th class="text-center">Số lô</th>
+                                    <th>Lô sớm hết hạn</th>
+                                    <th class="text-center">Cảnh báo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tongHopBody">
+                                <tr><td colspan="6" class="text-center py-4 text-muted">Đang tải dữ liệu...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Theo lô -->
+                <div id="theoLoPanel" class="d-none">
+                    <div class="table-responsive table-modern">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Mã lô</th>
+                                    <th>Mã SP</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Ngày nhập</th>
+                                    <th>Hạn sử dụng</th>
+                                    <th class="text-end">Giá nhập</th>
+                                    <th class="text-end">Số lượng</th>
+                                    <th>Đơn vị</th>
+                                    <th class="text-center">Tình trạng</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryBody">
+                                <tr><td colspan="9" class="text-center py-4 text-muted">Đang tải dữ liệu...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="text-muted small mt-2" id="filterInfo"></div>
@@ -222,8 +260,8 @@
         </div>
     </div>
 
-    <script src="assets/js/app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/app.js"></script>
     <script src="tonkho.js"></script>
 </body>
 </html>

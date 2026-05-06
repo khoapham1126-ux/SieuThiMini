@@ -24,17 +24,17 @@ namespace WebApplication1.Controllers
                 .OrderByDescending(d => d.NgayTao)
                 .Select(d => new
                 {
-                    d.Id,
-                    d.NgayTao,
-                    d.TongTien,
-                    d.TrangThai,
-                    d.KhachHangId,
-                    d.NhanVienId,
-                    NhanVienTen = _context.NhanViens
+                    id = d.Id,
+                    ngayTao = d.NgayTao,
+                    tongTien = d.TongTien,
+                    trangThai = d.TrangThai,
+                    khachHangId = d.KhachHangId,
+                    nhanVienId = d.NhanVienId,
+                    nhanVienTen = _context.NhanViens
                         .Where(n => n.Id == d.NhanVienId)
                         .Select(n => n.HoTen)
                         .FirstOrDefault(),
-                    KhachHangTen = d.KhachHangId == 0
+                    khachHangTen = d.KhachHangId == 0
                         ? null
                         : _context.KhachHangs
                             .Where(k => k.Id == d.KhachHangId)
@@ -53,7 +53,66 @@ namespace WebApplication1.Controllers
             var donHang = await _context.DonHangs.FindAsync(id);
             if (donHang == null)
                 return NotFound(new { message = "Không tìm thấy đơn hàng!" });
-            return Ok(donHang);
+
+            return Ok(new
+            {
+                id = donHang.Id,
+                ngayTao = donHang.NgayTao,
+                tongTien = donHang.TongTien,
+                trangThai = donHang.TrangThai,
+                khachHangId = donHang.KhachHangId,
+                nhanVienId = donHang.NhanVienId
+            });
+        }
+
+        // GET: api/DonHang/5/chitiet
+        [HttpGet("{id}/chitiet")]
+        public async Task<IActionResult> GetChiTietDonHang(int id)
+        {
+            var donHang = await _context.DonHangs.FindAsync(id);
+            if (donHang == null)
+                return NotFound(new { message = "Không tìm thấy đơn hàng!" });
+
+            var chiTiet = await _context.ChiTietDonHangs
+                .Where(ct => ct.DonHangId == id)
+                .Select(ct => new
+                {
+                    id = ct.Id,
+                    sanPhamId = ct.SanPhamId,
+                    tenSanPham = _context.SanPhams
+                        .Where(s => s.maSanPham == ct.SanPhamId)
+                        .Select(s => s.tenSanPham)
+                        .FirstOrDefault(),
+                    soLuong = ct.SoLuong,
+                    donGia = ct.DonGia,
+                    thanhTien = ct.SoLuong * ct.DonGia
+                })
+                .ToListAsync();
+
+            var khachHangTen = donHang.KhachHangId == 0
+                ? "Khách lẻ"
+                : await _context.KhachHangs
+                    .Where(k => k.Id == donHang.KhachHangId)
+                    .Select(k => k.HoTen)
+                    .FirstOrDefaultAsync();
+
+            var nhanVienTen = await _context.NhanViens
+                .Where(n => n.Id == donHang.NhanVienId)
+                .Select(n => n.HoTen)
+                .FirstOrDefaultAsync();
+
+            return Ok(new
+            {
+                id = donHang.Id,
+                ngayTao = donHang.NgayTao,
+                tongTien = donHang.TongTien,
+                trangThai = donHang.TrangThai,
+                khachHangId = donHang.KhachHangId,
+                nhanVienId = donHang.NhanVienId,
+                khachHangTen = khachHangTen,
+                nhanVienTen = nhanVienTen,
+                chiTiet = chiTiet
+            });
         }
 
         // POST: api/DonHang
@@ -93,13 +152,12 @@ namespace WebApplication1.Controllers
 
             donHang.TrangThai = "DaThanhToan";
 
-            // Cộng điểm cho khách hàng nếu có
             if (donHang.KhachHangId != 0)
             {
                 var khachHang = await _context.KhachHangs.FindAsync(donHang.KhachHangId);
                 if (khachHang != null)
                 {
-                    int diemCong = (int)(donHang.TongTien / 10000); // 10k = 1 điểm
+                    int diemCong = (int)(donHang.TongTien / 10000);
                     if (diemCong > 0)
                     {
                         khachHang.DiemTichLuy += diemCong;

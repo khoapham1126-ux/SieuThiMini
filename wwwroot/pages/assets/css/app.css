@@ -28,19 +28,17 @@ body {
     display: flex;
 }
 
-/* Sidebar */
 .sidebar {
     width: 260px;
-    min-height: 100vh;
+    height: 100vh; 
+    overflow-y: auto; 
     background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
     color: white;
     flex-shrink: 0;
     box-shadow: 6px 0 24px rgba(185, 28, 28, 0.2);
     position: sticky;
     top: 0;
-    align-self: flex-start;
 }
-
     .sidebar .brand {
         font-size: 1.35rem;
         font-weight: 800;

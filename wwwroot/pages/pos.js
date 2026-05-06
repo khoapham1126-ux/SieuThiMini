@@ -230,10 +230,16 @@ async function applyMaKhuyenMai() {
 
         const now = new Date();
         const found = khuyenMaiList.find(km => {
-            // So sánh tên không phân biệt hoa thường
-            const match = km.ten.trim().toLowerCase() === code.toLowerCase();
-            const inTime = now >= new Date(km.ngayBatDau) && now <= new Date(km.ngayKetThuc);
-            return match && inTime;
+            const ten = (km.ten ?? km.Ten ?? "").trim().toLowerCase();
+            const phanTramGiam = (km.phanTramGiam ?? km.PhanTramGiam ?? 0);
+            const ghiChu = (km.ghiChu ?? km.GhiChu ?? "").trim().toLowerCase();
+
+            const match = ten === code.toLowerCase();
+
+            // DB đang dùng "Còn hiệu lực" / "Hết hiệu lực"
+            const conHieuLuc = ghiChu.includes("còn"); // hoặc ghiChu === "còn hiệu lực"
+
+            return match && conHieuLuc && phanTramGiam > 0;
         });
 
         if (!found) {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
 using WebApplication1.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace WebApplication1.Controllers
 {
@@ -16,13 +16,76 @@ namespace WebApplication1.Controllers
             _context = context;
         }
 
-        [HttpGet(Name = "GetTonKho")]
-        public async Task<IEnumerable<TonKho>> Get()
+        // GET: api/TonKho
+        [HttpGet]
+        public async Task<IActionResult> Get()
         {
-            return await _context.TonKhos
+            var data = await _context.TonKhos
                 .Include(t => t.SanPham)
                 .Include(t => t.LoHang)
+                .Select(t => new
+                {
+                    maLo = t.LoHang != null ? t.LoHang.Id : 0,
+                    sanPhamId = t.SanPhamId,
+                    tenSanPham = t.SanPham != null ? t.SanPham.tenSanPham : "",
+                    ngayNhap = t.LoHang != null ? t.LoHang.NgayNhap : (DateTime?)null,
+                    hanSuDung = t.LoHang != null ? t.LoHang.HanSuDung : (DateTime?)null,
+                    giaNhap = t.LoHang != null ? t.LoHang.GiaNhap : 0,
+                    soLuong = t.SoLuong,
+                    donViTinh = t.LoHang != null ? t.LoHang.LoaiDonVi : "",
+                    loaiDonVi = t.LoHang != null ? t.LoHang.LoaiDonVi : "",
+                    trangThai = t.LoHang != null
+                        ? (t.LoHang.HanSuDung < DateTime.Now.Date
+                            ? "het"
+                            : (t.LoHang.HanSuDung <= DateTime.Now.Date.AddDays(30) ? "sap" : "ok"))
+                        : "ok"
+                })
                 .ToListAsync();
+
+            return Ok(data);
+        }
+
+        // GET: api/TonKho/tonghop
+        [HttpGet("tonghop")]
+        public async Task<IActionResult> GetTongHop()
+        {
+            var data = await _context.TonKhos
+                .Include(t => t.SanPham)
+                .Include(t => t.LoHang)
+                .GroupBy(t => new
+                {
+                    t.SanPhamId,
+                    TenSanPham = t.SanPham != null ? t.SanPham.tenSanPham : "",
+                    MaNhaCungCap = t.SanPham != null ? t.SanPham.maNhaCungCap : 0
+                })
+                .Select(g => new
+                {
+                    sanPhamId = g.Key.SanPhamId,
+                    tenSanPham = g.Key.TenSanPham,
+                    maNhaCungCap = g.Key.MaNhaCungCap,
+                    tongTon = g.Sum(x => x.SoLuong),
+                    soLo = g.Count(),
+                    loSapHetHan = g.OrderBy(x => x.LoHang!.HanSuDung)
+                        .Select(x => new
+                        {
+                            maLo = x.LoHang != null ? x.LoHang.Id : 0,
+                            hanSuDung = x.LoHang != null ? x.LoHang.HanSuDung : (DateTime?)null,
+                            soLuong = x.SoLuong,
+                            trangThai = x.LoHang != null
+                                ? (x.LoHang.HanSuDung < DateTime.Now.Date
+                                    ? "het"
+                                    : (x.LoHang.HanSuDung <= DateTime.Now.Date.AddDays(30) ? "sap" : "ok"))
+                                : "ok"
+                        })
+                        .FirstOrDefault(),
+                    trangThai = g.Sum(x => x.SoLuong) <= 0
+                        ? "het"
+                        : (g.Sum(x => x.SoLuong) <= 10 ? "sap" : "ok")
+                })
+                .OrderBy(x => x.tenSanPham)
+                .ToListAsync();
+
+            return Ok(data);
         }
 
         [HttpPost]
@@ -50,7 +113,6 @@ namespace WebApplication1.Controllers
             if (tonkho.SoLuong <= 0)
                 return BadRequest(new { message = "Số lượng trừ phải lớn hơn 0" });
 
-            // FEFO: lấy các lô còn hàng, sắp xếp theo HanSuDung tăng dần
             var tonKhos = await _context.TonKhos
                 .Include(t => t.SanPham)
                 .Include(t => t.LoHang)
