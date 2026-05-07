@@ -12,9 +12,11 @@ let isCameraOn = false;
 let appliedCoupon = null;
 let selectedCustomerData = null;
 let usedPoints = 0;
+let allProducts = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     loadKhuyenMai();
+    loadProducts();
     checkoutModal = new bootstrap.Modal(document.getElementById("checkoutModal"));
 
     document.getElementById("barcodeInput").addEventListener("keydown", (e) => {
@@ -126,7 +128,75 @@ document.addEventListener("DOMContentLoaded", () => {
     if (usedPointInput) {
         usedPointInput.addEventListener("input", handleUsedPointsChange);
     }
+
+    const productSearchInput = document.getElementById("productSearchInput");
+    const productSearchResult = document.getElementById("productSearchResult");
+
+    if (productSearchInput && productSearchResult) {
+        let searchTimer = null;
+
+        productSearchInput.addEventListener("input", () => {
+            const keyword = productSearchInput.value.trim().toLowerCase();
+
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                if (!keyword) {
+                    productSearchResult.classList.add("d-none");
+                    productSearchResult.innerHTML = "";
+                    return;
+                }
+
+                const matches = allProducts.filter(sp =>
+                    (sp.tenSanPham ?? sp.TenSanPham ?? "").toLowerCase().includes(keyword)
+                ).slice(0, 8);
+
+                if (matches.length === 0) {
+                    productSearchResult.innerHTML = `
+                        <div class="list-group-item text-muted">Không tìm thấy sản phẩm</div>
+                    `;
+                    productSearchResult.classList.remove("d-none");
+                    return;
+                }
+
+                productSearchResult.innerHTML = matches.map(sp => {
+                    const barcode = sp.maVach ?? sp.MaVach ?? "";
+                    const ten = sp.tenSanPham ?? sp.TenSanPham ?? "Sản phẩm";
+                    const price = sp.giaBan ?? sp.GiaBan ?? 0;
+
+                    return `
+                        <button type="button"
+                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                onclick="selectProductBySearch('${barcode}')">
+                            <div>
+                                <div class="fw-semibold">${ten}</div>
+                                <div class="small text-muted">${barcode}</div>
+                            </div>
+                            <span class="text-danger fw-bold">${formatCurrency(price)}</span>
+                        </button>
+                    `;
+                }).join("");
+
+                productSearchResult.classList.remove("d-none");
+            }, 250);
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!productSearchInput.contains(e.target) && !productSearchResult.contains(e.target)) {
+                productSearchResult.classList.add("d-none");
+            }
+        });
+    }
 });
+
+async function loadProducts() {
+    try {
+        const res = await fetch("/api/SanPham");
+        if (!res.ok) return;
+        allProducts = await res.json();
+    } catch {
+        allProducts = [];
+    }
+}
 
 function handleUsedPointsChange() {
     const input = document.getElementById("usedPointInput");
@@ -246,42 +316,73 @@ async function searchByBarcode() {
             return;
         }
 
-        currentProduct = data;
-        const km = getActiveKhuyenMai(data.maSanPham);
-
-        document.getElementById("productName").textContent = data.tenSanPham;
-        document.getElementById("productBarcode").textContent = data.maVach;
-
-        if (km) {
-            const giaGoc = data.giaBan;
-            const giaGiam = Math.round(giaGoc * (1 - km.phanTramGiam / 100));
-
-            document.getElementById("productSaleBadge").classList.remove("d-none");
-            document.getElementById("productOriginalPrice").classList.remove("d-none");
-            document.getElementById("productOriginalPrice").textContent = formatCurrency(giaGoc);
-            document.getElementById("productPrice").textContent = formatCurrency(giaGiam);
-
-            const saleInfo = document.getElementById("productSaleInfo");
-            saleInfo.classList.remove("d-none");
-            saleInfo.textContent = `🏷 ${km.ten} — Giảm ${km.phanTramGiam}%`;
-
-            currentProduct._giaThucTe = giaGiam;
-            currentProduct._khuyenMai = km;
-        } else {
-            document.getElementById("productSaleBadge").classList.add("d-none");
-            document.getElementById("productOriginalPrice").classList.add("d-none");
-            document.getElementById("productSaleInfo").classList.add("d-none");
-            document.getElementById("productPrice").textContent = formatCurrency(data.giaBan);
-            currentProduct._giaThucTe = data.giaBan;
-            currentProduct._khuyenMai = null;
-        }
-
-        productCard.classList.remove("d-none");
+        await displayProduct(data);
         input.value = "";
         input.focus();
     } catch {
         showProductError("Lỗi kết nối đến server.");
     }
+}
+
+async function selectProductBySearch(barcode) {
+    const productSearchInput = document.getElementById("productSearchInput");
+    const productSearchResult = document.getElementById("productSearchResult");
+
+    if (productSearchInput) productSearchInput.value = "";
+    if (productSearchResult) {
+        productSearchResult.classList.add("d-none");
+        productSearchResult.innerHTML = "";
+    }
+
+    if (!barcode) return;
+
+    try {
+        const res = await fetch(`/api/SanPham/mavach/${encodeURIComponent(barcode)}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+            showProductError(data.message || `Không tìm thấy: ${barcode}`);
+            return;
+        }
+
+        await displayProduct(data);
+    } catch {
+        showProductError("Lỗi kết nối đến server.");
+    }
+}
+
+async function displayProduct(data) {
+    currentProduct = data;
+    const km = getActiveKhuyenMai(data.maSanPham);
+
+    document.getElementById("productName").textContent = data.tenSanPham;
+    document.getElementById("productBarcode").textContent = data.maVach;
+
+    if (km) {
+        const giaGoc = data.giaBan;
+        const giaGiam = Math.round(giaGoc * (1 - km.phanTramGiam / 100));
+
+        document.getElementById("productSaleBadge").classList.remove("d-none");
+        document.getElementById("productOriginalPrice").classList.remove("d-none");
+        document.getElementById("productOriginalPrice").textContent = formatCurrency(giaGoc);
+        document.getElementById("productPrice").textContent = formatCurrency(giaGiam);
+
+        const saleInfo = document.getElementById("productSaleInfo");
+        saleInfo.classList.remove("d-none");
+        saleInfo.textContent = `🏷 ${km.ten} — Giảm ${km.phanTramGiam}%`;
+
+        currentProduct._giaThucTe = giaGiam;
+        currentProduct._khuyenMai = km;
+    } else {
+        document.getElementById("productSaleBadge").classList.add("d-none");
+        document.getElementById("productOriginalPrice").classList.add("d-none");
+        document.getElementById("productSaleInfo").classList.add("d-none");
+        document.getElementById("productPrice").textContent = formatCurrency(data.giaBan);
+        currentProduct._giaThucTe = data.giaBan;
+        currentProduct._khuyenMai = null;
+    }
+
+    document.getElementById("productCard").classList.remove("d-none");
 }
 
 function showProductError(msg) {
@@ -749,21 +850,6 @@ async function confirmCheckout() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ soDiem: pointsToUse })
             });
-        }
-
-        if (customerId) {
-            const earnedPoints = Math.floor(total / 1000);
-            if (earnedPoints > 0) {
-                try {
-                    await fetch(`/api/KhachHang/${customerId}/cong-diem`, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ soDiem: earnedPoints })
-                    });
-                } catch (err) {
-                    console.warn("Không cộng được điểm tích lũy:", err);
-                }
-            }
         }
 
         checkoutModal.hide();

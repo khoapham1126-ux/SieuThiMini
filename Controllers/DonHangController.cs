@@ -157,7 +157,7 @@ namespace WebApplication1.Controllers
                 var khachHang = await _context.KhachHangs.FindAsync(donHang.KhachHangId);
                 if (khachHang != null)
                 {
-                    int diemCong = (int)(donHang.TongTien / 10000);
+                    int diemCong = (int)(donHang.TongTien / 2000);
                     if (diemCong > 0)
                     {
                         khachHang.DiemTichLuy += diemCong;
