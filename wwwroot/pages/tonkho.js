@@ -17,7 +17,7 @@ async function loadTongHop() {
         const data = await res.json();
         allTongHop = data;
         renderTongHop(data);
-        updateStats(data);
+        updateStats();
     } catch (err) {
         tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">${err.message}</td></tr>`;
     }
@@ -32,37 +32,41 @@ async function loadTheoLo() {
         const data = await res.json();
         allTonKho = data;
         renderTheoLo(data);
-        updateStatsFromLots(data);
+        updateStats();
     } catch (err) {
         tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">${err.message}</td></tr>`;
     }
 }
 
-function updateStats(dataTongHop) {
-    const allLots = allTonKho.length;
-
-    // Nếu chưa load theo lô xong thì không ghi đè số thống kê theo lô
-    if (allLots === 0) {
-        document.getElementById("statTotal").textContent = dataTongHop.reduce((sum, x) => sum + (x.soLo || 0), 0);
-        document.getElementById("statOk").textContent = "-";
-        document.getElementById("statSapHetHan").textContent = "-";
-        document.getElementById("statHetHan").textContent = "-";
-        return;
-    }
-
-    updateStatsFromLots(allTonKho);
+function getTongTon(item) {
+    return Number(item.tongTon ?? item.TongTon ?? item.soLuong ?? item.SoLuong ?? 0);
 }
 
-function updateStatsFromLots(data) {
-    const total = data.length;
-    const ok = data.filter(x => getLotStatus(x) === "ok").length;
-    const sap = data.filter(x => getLotStatus(x) === "sap").length;
-    const het = data.filter(x => getLotStatus(x) === "het").length;
+function getTrangThaiTongHop(item) {
+    const tongTon = getTongTon(item);
+    if (tongTon <= 0) return "het";
+    if (tongTon < 50) return "sap";
+    return "ok";
+}
 
-    document.getElementById("statTotal").textContent = total;
+function updateStats() {
+    const lots = allTonKho || [];
+    const tongHop = allTongHop || [];
+
+    const totalLots = lots.length;
+    const ok = lots.filter(x => getLotStatus(x) === "ok").length;
+    const sapHetHan = lots.filter(x => getLotStatus(x) === "sap").length;
+    const hetHan = lots.filter(x => getLotStatus(x) === "het").length;
+
+    const sapHetHang = tongHop.filter(x => getTrangThaiTongHop(x) === "sap").length;
+    const hetHang = tongHop.filter(x => getTrangThaiTongHop(x) === "het").length;
+
+    document.getElementById("statTotal").textContent = totalLots;
     document.getElementById("statOk").textContent = ok;
-    document.getElementById("statSapHetHan").textContent = sap;
-    document.getElementById("statHetHan").textContent = het;
+    document.getElementById("statSapHetHan").textContent = sapHetHan;
+    document.getElementById("statHetHan").textContent = hetHan;
+    document.getElementById("statSapHetHang").textContent = sapHetHang;
+    document.getElementById("statHetHang").textContent = hetHang;
 }
 
 function renderTongHop(data) {
@@ -81,7 +85,7 @@ function renderTongHop(data) {
             <tr>
                 <td class="fw-semibold text-danger">#${item.sanPhamId}</td>
                 <td>${item.tenSanPham || "—"}</td>
-                <td class="text-end fw-semibold">${item.tongTon || 0}</td>
+                <td class="text-end fw-semibold">${getTongTon(item)}</td>
                 <td class="text-center">${item.soLo || 0}</td>
                 <td>
                     ${lo
@@ -118,7 +122,9 @@ function renderTheoLo(data) {
                 <td>${formatDate(item.ngayNhap)}</td>
                 <td class="${hanClass}">${formatDate(item.hanSuDung)}</td>
                 <td class="text-end">${formatCurrency(item.giaNhap)}</td>
-                <td class="text-end fw-semibold ${item.soLuong <= 5 ? "qty-low" : ""}">${item.soLuong || 0}</td>
+                <td class="text-end fw-semibold ${Number(item.soLuong || 0) <= 5 ? "text-warning" : ""}">
+                    ${item.soLuong || 0}
+                </td>
                 <td>${item.donViTinh || item.loaiDonVi || "—"}</td>
                 <td class="text-center"><span class="badge ${statusInfo.cls}">${statusInfo.label}</span></td>
             </tr>
@@ -168,7 +174,7 @@ function applyTongHopFilter() {
 
     return allTongHop.filter(x => {
         const matchName = !keyword || (x.tenSanPham || "").toLowerCase().includes(keyword);
-        const matchWarning = !warning || x.trangThai === warning;
+        const matchWarning = !warning || getTrangThaiTongHop(x) === warning;
         return matchName && matchWarning;
     });
 }
@@ -211,35 +217,6 @@ function resetFilter() {
     }
 }
 
-function showTab(tab) {
-    currentTab = tab;
-
-    const tongHopPanel = document.getElementById("tongHopPanel");
-    const theoLoPanel = document.getElementById("theoLoPanel");
-    const btnTongHop = document.getElementById("btnTabTongHop");
-    const btnTheoLo = document.getElementById("btnTabTheoLo");
-    const filterTongHop = document.getElementById("filterTongHop");
-    const filterTheoLo = document.getElementById("filterTheoLo");
-
-    if (tab === "tonghop") {
-        tongHopPanel.classList.remove("d-none");
-        theoLoPanel.classList.add("d-none");
-        filterTongHop.classList.remove("d-none");
-        filterTheoLo.classList.add("d-none");
-        btnTongHop.classList.add("active");
-        btnTheoLo.classList.remove("active");
-        renderTongHop(applyTongHopFilter());
-    } else {
-        tongHopPanel.classList.add("d-none");
-        theoLoPanel.classList.remove("d-none");
-        filterTongHop.classList.add("d-none");
-        filterTheoLo.classList.remove("d-none");
-        btnTongHop.classList.remove("active");
-        btnTheoLo.classList.add("active");
-        renderTheoLo(applyLoFilter());
-    }
-}
-
 function getLotStatus(item) {
     const han = item.hanSuDung ? new Date(item.hanSuDung) : null;
     if (!han) return "ok";
@@ -264,10 +241,11 @@ function getLotStatusInfo(status) {
 }
 
 function getTongHopWarning(item) {
-    if ((item.tongTon || 0) <= 0) {
+    const tongTon = getTongTon(item);
+    if (tongTon <= 0) {
         return `<span class="badge badge-het-hang">Hết hàng</span>`;
     }
-    if ((item.tongTon || 0) <= 10) {
+    if (tongTon < 50) {
         return `<span class="badge badge-sap-het-hang">Sắp hết</span>`;
     }
     return `<span class="badge badge-binh-thuong">Bình thường</span>`;
@@ -281,4 +259,4 @@ function formatDate(dateStr) {
     if (!dateStr) return "—";
     const d = new Date(dateStr);
     return d.toLocaleDateString("vi-VN");
-} 
+}

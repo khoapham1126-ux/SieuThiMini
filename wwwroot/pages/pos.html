@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bán hàng - Siêu Thị Mini</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/app.css">
@@ -21,7 +22,8 @@
             color: white;
         }
 
-        #barcodeInput:focus {
+        #barcodeInput:focus,
+        #customerSearchInput:focus {
             border-color: #dc2626;
             box-shadow: 0 0 0 3px rgba(220,38,38,0.15);
         }
@@ -189,7 +191,6 @@
             }
         }
 
-        /* Coupon box */
         .coupon-box {
             background: #fffbeb;
             border: 1.5px dashed #f59e0b;
@@ -202,7 +203,6 @@
                 box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
             }
 
-        /* QR section */
         .qr-wrapper {
             background: #f8fafc;
             border: 1px solid #e5e7eb;
@@ -229,6 +229,22 @@
             padding: 6px 18px;
             border-radius: 8px;
             margin-bottom: 12px;
+        }
+
+        #selectedCustomerBox {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+        }
+
+        #pointUseBox {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+        }
+
+        #usedPointInput:disabled {
+            background-color: #f3f4f6;
         }
     </style>
 </head>
@@ -268,11 +284,7 @@
 
             <main class="page-content">
                 <div class="row g-3">
-
-                    <!-- CỘT TRÁI -->
-                    <div class="col-lg-5">
-
-                        <!-- Nhập mã vạch -->
+                    <div class="col-lg-4">
                         <div class="card-ui p-4 mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="fw-bold mb-0">Tìm sản phẩm</h6>
@@ -297,8 +309,7 @@
                             <div class="text-muted small mt-1">Nhấn <strong>Enter</strong> để tìm nhanh</div>
                         </div>
 
-                        <!-- Thông tin sản phẩm tìm được -->
-                        <div class="card-ui p-4 d-none mb-3" id="productCard">
+                        <div class="card-ui p-4 mb-3 d-none" id="productCard">
                             <h6 class="fw-bold mb-3 text-danger">Sản phẩm tìm thấy</h6>
                             <div class="product-found p-3 rounded bg-light">
                                 <div class="d-flex align-items-center gap-2 mb-1">
@@ -312,16 +323,13 @@
                                         <span class="price-original d-none" id="productOriginalPrice"></span>
                                         <span class="text-danger fw-bold fs-5" id="productPrice">0 đ</span>
                                     </div>
-                                    <button class="btn btn-primary btn-sm" onclick="addToCart()">
-                                        + Thêm vào giỏ
-                                    </button>
+                                    <button class="btn btn-primary btn-sm" onclick="addToCart()">+ Thêm vào giỏ</button>
                                 </div>
                             </div>
                         </div>
 
                         <div class="alert alert-danger d-none mb-3" id="productError"></div>
 
-                        <!-- Mã khuyến mãi -->
                         <div class="card-ui p-4 mb-3">
                             <h6 class="fw-bold mb-2">🏷 Mã khuyến mãi</h6>
                             <div class="coupon-box">
@@ -344,17 +352,25 @@
                             </div>
                         </div>
 
-                        <!-- Khách hàng -->
                         <div class="card-ui p-4">
                             <h6 class="fw-bold mb-2">Khách hàng (tuỳ chọn)</h6>
-                            <select class="form-select" id="customerSelect">
-                                <option value="">-- Khách lẻ --</option>
-                            </select>
+
+                            <input type="text" class="form-control mb-2" id="customerSearchInput"
+                                   placeholder="Nhập số điện thoại khách hàng..."
+                                   autocomplete="off">
+
+                            <div class="p-3 rounded border bg-light" id="selectedCustomerBox" style="min-height:78px;">
+                                <div class="small text-muted mb-1">Khách hàng đã chọn</div>
+                                <div class="fw-semibold" id="selectedCustomerName">Chưa chọn khách hàng</div>
+                                <div class="small text-muted" id="selectedCustomerPhone"></div>
+                                <div class="small text-warning fw-semibold mt-1" id="selectedCustomerPoint"></div>
+                            </div>
+
+                            <input type="hidden" id="customerSelect" value="">
                         </div>
                     </div>
 
-                    <!-- CỘT PHẢI: Giỏ hàng -->
-                    <div class="col-lg-7">
+                    <div class="col-lg-8">
                         <div class="card-ui p-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="fw-bold mb-0">Giỏ hàng</h6>
@@ -383,7 +399,6 @@
                                 </table>
                             </div>
 
-                            <!-- Tổng & nút thanh toán -->
                             <div class="total-bar p-4 mt-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="opacity-90">Tổng số mặt hàng:</span>
@@ -394,18 +409,37 @@
                                     <span id="subtotalAmount">0 đ</span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-1" id="discountRow" style="display:none!important">
-                                    <span class="opacity-90">Giảm SALE:</span>
+                                    <span class="opacity-90">Giảm giá sản phẩm:</span>
                                     <span class="fw-semibold" id="discountAmount" style="color:#fbbf24">- 0 đ</span>
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center mb-3" id="couponDiscountRow" style="display:none!important">
-                                    <span class="opacity-90">Giảm mã KM:</span>
+                                <div class="d-flex justify-content-between align-items-center mb-1" id="couponDiscountRow" style="display:none!important">
+                                    <span class="opacity-90">Giảm giá khuyến mãi:</span>
                                     <span class="fw-semibold" id="couponDiscountAmount" style="color:#fbbf24">- 0 đ</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-1" id="pointDiscountRow" style="display:none!important">
+                                    <span class="opacity-90">Giảm điểm tích lũy:</span>
+                                    <span class="fw-semibold" id="pointDiscountAmount" style="color:#fbbf24">- 0 đ</span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <span class="fs-5 fw-semibold">Tổng tiền:</span>
                                     <span class="fs-4 fw-bold" id="totalAmount">0 đ</span>
                                 </div>
-                                <button class="btn btn-light w-100 fw-bold text-danger fs-6"
+
+                                <div class="small text-white-50 mb-2">
+                                    * Đã trừ giảm giá khuyến mãi và điểm tích lũy.
+                                </div>
+
+                                <div class="mt-3 p-3 rounded bg-light border" id="pointUseBox">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label fw-semibold mb-0 text-dark">Điểm muốn dùng</label>
+                                        <span class="small text-danger fw-semibold">1 điểm = 70đ</span>
+                                    </div>
+                                    <input type="number" class="form-control" id="usedPointInput"
+                                           placeholder="0" min="0" value="0" disabled>
+                                    <div class="small text-muted mt-1" id="pointHint">Chọn khách hàng để dùng điểm</div>
+                                </div>
+
+                                <button class="btn btn-light w-100 fw-bold text-danger fs-6 mt-3"
                                         onclick="openCheckoutModal()" id="checkoutBtn" disabled>
                                     💳 Thanh toán
                                 </button>
@@ -419,9 +453,6 @@
         </div>
     </div>
 
-    <!-- ════════════════════════════════════════════════════════
-         MODAL THANH TOÁN
-    ════════════════════════════════════════════════════════ -->
     <div class="modal fade" id="checkoutModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content" style="border-radius:20px;border:none;">
@@ -432,7 +463,6 @@
 
                 <div class="modal-body p-4">
                     <div class="row g-4">
-                        <!-- Tóm tắt đơn hàng -->
                         <div class="col-md-5">
                             <h6 class="fw-bold mb-3 text-muted">📋 Tóm tắt đơn hàng</h6>
                             <div id="receiptItems" class="mb-3"></div>
@@ -442,12 +472,16 @@
                                 <span id="modalSubtotal">0 đ</span>
                             </div>
                             <div class="d-flex justify-content-between text-warning fw-semibold mb-1 d-none" id="modalDiscountRow">
-                                <span>Giảm SALE:</span>
+                                <span>Giảm giá sản phẩm:</span>
                                 <span id="modalDiscount">- 0 đ</span>
                             </div>
                             <div class="d-flex justify-content-between fw-semibold mb-1 d-none" id="modalCouponRow" style="color:#f59e0b">
-                                <span>Mã KM:</span>
+                                <span>Giảm giá khuyến mãi:</span>
                                 <span id="modalCouponDiscount">- 0 đ</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-danger fw-semibold mb-1 d-none" id="modalPointRow">
+                                <span>Giảm điểm tích lũy:</span>
+                                <span id="modalPointDiscount">- 0 đ</span>
                             </div>
                             <div class="d-flex justify-content-between fw-bold fs-5 border-top pt-2" style="color:#dc2626">
                                 <span>Tổng cộng:</span>
@@ -455,7 +489,6 @@
                             </div>
                         </div>
 
-                        <!-- Phương thức thanh toán -->
                         <div class="col-md-7">
                             <h6 class="fw-bold mb-3 text-muted">💰 Phương thức thanh toán</h6>
 
@@ -476,7 +509,6 @@
                                 </div>
                             </div>
 
-                            <!-- Tiền mặt section -->
                             <div id="cashSection">
                                 <label class="form-label fw-semibold">Tiền khách đưa (đ)</label>
                                 <input type="number" class="form-control mb-2" id="tienKhachDua"
@@ -489,7 +521,6 @@
                                 </div>
                             </div>
 
-                            <!-- Thẻ / QR section -->
                             <div id="cardSection" class="d-none">
                                 <div class="qr-wrapper">
                                     <div class="small text-muted mb-2 fw-semibold">Số tiền cần chuyển</div>

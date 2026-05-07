@@ -7,6 +7,86 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/app.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .filter-bar {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        }
+
+        .filter-chip {
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            color: #374151;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            transition: all .2s ease;
+            white-space: nowrap;
+        }
+
+            .filter-chip:hover {
+                border-color: #dc2626;
+                color: #dc2626;
+                background: #fff5f5;
+            }
+
+            .filter-chip.active {
+                background: #dc2626;
+                border-color: #dc2626;
+                color: #fff;
+            }
+
+        .report-range-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            color: #334155;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+            .report-range-label .dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: #22c55e;
+                display: inline-block;
+            }
+
+        .quick-filter-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .custom-range-box {
+            border-top: 1px dashed #e5e7eb;
+            padding-top: 14px;
+            margin-top: 14px;
+        }
+
+        .metric-card h3 {
+            letter-spacing: -0.02em;
+        }
+
+        @media (max-width: 576px) {
+            .quick-filter-wrap {
+                gap: 8px;
+            }
+
+            .filter-chip {
+                padding: 7px 12px;
+                font-size: 0.88rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="app-wrapper">
@@ -47,27 +127,64 @@
             </header>
 
             <main class="page-content">
+                <!-- Filter bar -->
+                <div class="filter-bar p-4 mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                        <div>
+                            <div class="fw-bold mb-1">Bộ lọc thời gian</div>
+                            <div class="text-muted small" id="reportRangeLabel">Đang xem: ...</div>
+                        </div>
+
+                        <div class="quick-filter-wrap">
+                            <button class="filter-chip" data-filter="today">Hôm nay</button>
+                            <button class="filter-chip" data-filter="7days">7 ngày</button>
+                            <button class="filter-chip active" data-filter="month">Tháng này</button>
+                            <button class="filter-chip" data-filter="custom">Tuỳ chọn</button>
+                        </div>
+                    </div>
+
+                    <div class="custom-range-box d-none" id="customRangeBox">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4 col-sm-6">
+                                <label for="fromDate" class="form-label fw-semibold mb-1">Từ ngày</label>
+                                <input type="date" class="form-control" id="fromDate">
+                            </div>
+                            <div class="col-md-4 col-sm-6">
+                                <label for="toDate" class="form-label fw-semibold mb-1">Đến ngày</label>
+                                <input type="date" class="form-control" id="toDate">
+                            </div>
+                            <div class="col-md-4 d-flex gap-2">
+                                <button class="btn btn-danger flex-grow-1" id="btnApplyCustom">Áp dụng</button>
+                                <button class="btn btn-outline-secondary" id="btnResetFilter">Xoá</button>
+                            </div>
+                        </div>
+                        <div class="text-muted small mt-2">
+                            Chỉ hiện ô ngày khi bạn chọn <strong>Tuỳ chọn</strong>.
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
-                        <div class="card-ui p-4">
+                        <div class="card-ui p-4 metric-card">
                             <div class="text-muted">Tổng doanh thu</div>
                             <h3 class="mb-0 text-danger" id="reportRevenue">...</h3>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card-ui p-4">
+                        <div class="card-ui p-4 metric-card">
                             <div class="text-muted">Tổng đơn</div>
                             <h3 class="mb-0" id="reportOrders">...</h3>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card-ui p-4">
+                        <div class="card-ui p-4 metric-card">
                             <div class="text-muted">Đã thanh toán</div>
                             <h3 class="mb-0 text-success" id="reportPaid">...</h3>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card-ui p-4">
+                        <div class="card-ui p-4 metric-card">
                             <div class="text-muted">Đã huỷ</div>
                             <h3 class="mb-0 text-secondary" id="reportCancelled">...</h3>
                         </div>
@@ -75,7 +192,10 @@
                 </div>
 
                 <div class="card-ui p-4 mb-4">
-                    <h5 class="mb-3">Biểu đồ doanh thu</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Biểu đồ doanh thu</h5>
+                        <span class="report-range-label"><span class="dot"></span><span id="chartRangeLabel">Đang xem: ...</span></span>
+                    </div>
                     <canvas id="reportChart" height="120"></canvas>
                 </div>
 

@@ -76,6 +76,16 @@
                 background: #dc2626;
                 color: #fff;
             }
+
+        .stat-card {
+            min-height: 92px;
+            border-radius: 16px;
+        }
+
+        .stat-value {
+            font-size: 1.9rem;
+            line-height: 1;
+        }
     </style>
 </head>
 <body>
@@ -118,28 +128,40 @@
             <main class="page-content">
                 <!-- Thống kê nhanh -->
                 <div class="row g-3 mb-3">
-                    <div class="col-md-3">
-                        <div class="card-ui p-3 text-center">
+                    <div class="col-lg-2">
+                        <div class="card-ui p-3 text-center stat-card">
                             <div class="text-muted small">Tổng lô hàng</div>
-                            <h4 class="mb-0 fw-bold" id="statTotal">...</h4>
+                            <h4 class="mb-0 fw-bold stat-value" id="statTotal">...</h4>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card-ui p-3 text-center">
+                    <div class="col-lg-2">
+                        <div class="card-ui p-3 text-center stat-card">
                             <div class="text-muted small">Còn hạn bình thường</div>
-                            <h4 class="mb-0 fw-bold text-success" id="statOk">...</h4>
+                            <h4 class="mb-0 fw-bold stat-value text-success" id="statOk">...</h4>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card-ui p-3 text-center">
+                    <div class="col-lg-2">
+                        <div class="card-ui p-3 text-center stat-card">
                             <div class="text-muted small">⚠ Sắp hết hạn (&lt; 30 ngày)</div>
-                            <h4 class="mb-0 fw-bold text-warning" id="statSapHetHan">...</h4>
+                            <h4 class="mb-0 fw-bold stat-value text-warning" id="statSapHetHan">...</h4>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card-ui p-3 text-center">
+                    <div class="col-lg-2">
+                        <div class="card-ui p-3 text-center stat-card">
                             <div class="text-muted small">🔴 Đã hết hạn</div>
-                            <h4 class="mb-0 fw-bold text-danger" id="statHetHan">...</h4>
+                            <h4 class="mb-0 fw-bold stat-value text-danger" id="statHetHan">...</h4>
+                        </div>
+                    </div>
+                    <div class="col-lg-2">
+                        <div class="card-ui p-3 text-center stat-card">
+                            <div class="text-muted small">⚠ Sắp hết hàng (&lt; 50)</div>
+                            <h4 class="mb-0 fw-bold stat-value text-warning" id="statSapHetHang">...</h4>
+                        </div>
+                    </div>
+                    <div class="col-lg-2">
+                        <div class="card-ui p-3 text-center stat-card">
+                            <div class="text-muted small">Đã hết hàng</div>
+                            <h4 class="mb-0 fw-bold stat-value text-danger" id="statHetHang">...</h4>
                         </div>
                     </div>
                 </div>

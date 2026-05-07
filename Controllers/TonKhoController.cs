@@ -80,7 +80,7 @@ namespace WebApplication1.Controllers
                         .FirstOrDefault(),
                     trangThai = g.Sum(x => x.SoLuong) <= 0
                         ? "het"
-                        : (g.Sum(x => x.SoLuong) <= 10 ? "sap" : "ok")
+                        : (g.Sum(x => x.SoLuong) < 50 ? "sap" : "ok")
                 })
                 .OrderBy(x => x.tenSanPham)
                 .ToListAsync();
@@ -151,18 +151,28 @@ namespace WebApplication1.Controllers
                 .Where(t => t.SanPhamId == tonkho.SanPhamId)
                 .SumAsync(t => t.SoLuong);
 
-            if (tongTonMoi < 10)
+            if (tongTonMoi < 50)
             {
                 var tenSanPham = tonKhos.First().SanPham?.tenSanPham ?? $"SP #{tonkho.SanPhamId}";
-                _context.CanhBaos.Add(new CanhBao
+
+                var daCoCanhBao = await _context.CanhBaos.AnyAsync(cb =>
+                    cb.SanPhamId == tonkho.SanPhamId &&
+                    cb.LoaiCanhBao == "SapHetHang" &&
+                    !cb.DaXuLy);
+
+                if (!daCoCanhBao)
                 {
-                    LoaiCanhBao = "SapHetHang",
-                    NoiDung = $"Sản phẩm {tenSanPham} sắp hết hàng, còn {tongTonMoi}",
-                    ThoiGian = DateTime.Now,
-                    DaXuLy = false,
-                    SanPhamId = tonkho.SanPhamId
-                });
-                await _context.SaveChangesAsync();
+                    _context.CanhBaos.Add(new CanhBao
+                    {
+                        LoaiCanhBao = "SapHetHang",
+                        NoiDung = $"Sản phẩm {tenSanPham} sắp hết hàng, còn {tongTonMoi}",
+                        ThoiGian = DateTime.Now,
+                        DaXuLy = false,
+                        SanPhamId = tonkho.SanPhamId
+                    });
+
+                    await _context.SaveChangesAsync();
+                }
             }
 
             return Ok(new { message = "Trừ kho thành công (FEFO)", soLuongConLai = tongTonMoi });
