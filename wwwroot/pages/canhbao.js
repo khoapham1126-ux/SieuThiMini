@@ -12,9 +12,18 @@ const API_URL = "/api/CanhBao";
 let allData = [];
 let filteredData = [];
 
-document.addEventListener("DOMContentLoaded", () => {
-    loadCanhBao();
+document.addEventListener("DOMContentLoaded", async () => {
+    await quetCanhBao(); // quét trước
+    await loadCanhBao(); // rồi mới load danh sách
 });
+
+async function quetCanhBao() {
+    try {
+        await fetch("/api/CanhBao/quet", { method: "POST" });
+    } catch {
+        // bỏ qua nếu lỗi, vẫn load danh sách bình thường
+    }
+}
 
 // ── LOAD DỮ LIỆU ─────────────────────────────────────────────
 async function loadCanhBao() {

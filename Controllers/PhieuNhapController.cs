@@ -135,6 +135,26 @@ namespace WebApplication1.Controllers
             }
 
             await _context.SaveChangesAsync();
+            foreach (var item in request.ChiTiet)
+            {
+                var tongTonMoi = await _context.TonKhos
+                    .Where(t => t.SanPhamId == item.SanPhamId)
+                    .SumAsync(t => t.SoLuong);
+
+                if (tongTonMoi >= 50)
+                {
+                    var canhBaos = await _context.CanhBaos
+                        .Where(c => c.SanPhamId == item.SanPhamId
+                                 && c.LoaiCanhBao == "SapHetHang"
+                                 && !c.DaXuLy)
+                        .ToListAsync();
+
+                    foreach (var cb in canhBaos)
+                        cb.DaXuLy = true;
+                }
+            }
+
+            await _context.SaveChangesAsync();
 
             return Ok(new
             {
