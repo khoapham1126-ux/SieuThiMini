@@ -78,7 +78,7 @@ async function loadOrderDetail(orderId) {
     const title = document.getElementById("modalTitleDonHang");
 
     title.textContent = `Chi tiết đơn hàng #${orderId}`;
-    body.innerHTML = `<div class="text-center text-muted py-4">Đang tải...</div>`;ádads
+    body.innerHTML = `<div class="text-center text-muted py-4">Đang tải...</div>`;
 
     if (!modalDonHang) {
         const modalEl = document.getElementById("modalChiTietDonHang");

@@ -7,126 +7,46 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/app.css">
     <style>
-        /* ── KPI Cards ── */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        @media (max-width: 992px) {
-            .kpi-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 576px) {
-            .kpi-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .kpi-card {
+        .summary-card {
             background: #fff;
             border: 1px solid #e5e7eb;
             border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-            position: relative;
-            overflow: hidden;
+            padding: 20px 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
-            .kpi-card::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 3px;
+            .summary-card .label {
+                font-size: 0.85rem;
+                color: #6b7280;
+                margin-bottom: 6px;
             }
 
-            .kpi-card.revenue::before {
-                background: #dc2626;
+            .summary-card .value {
+                font-size: 1.5rem;
+                font-weight: 800;
+                margin-bottom: 2px;
             }
 
-            .kpi-card.cost::before {
-                background: #d97706;
+            .summary-card .sub {
+                font-size: 0.8rem;
+                color: #9ca3af;
             }
-
-            .kpi-card.profit::before {
-                background: #16a34a;
-            }
-
-            .kpi-card.orders::before {
-                background: #2563eb;
-            }
-
-            .kpi-card.avg::before {
-                background: #7c3aed;
-            }
-
-            .kpi-card.margin::before {
-                background: #0891b2;
-            }
-
-        .kpi-label {
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 8px;
-        }
-
-        .kpi-value {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #111827;
-            line-height: 1.1;
-            margin-bottom: 4px;
-        }
-
-        .kpi-sub {
-            font-size: 0.8rem;
-            color: #9ca3af;
-        }
-
-        .kpi-icon {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            font-size: 1.8rem;
-            opacity: 0.15;
-        }
-
-        /* ── Filter Bar ── */
-        .filter-bar {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-        }
 
         .filter-chip {
             border: 1.5px solid #e5e7eb;
             background: #fff;
             color: #374151;
             border-radius: 999px;
-            padding: 7px 16px;
+            padding: 7px 18px;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             cursor: pointer;
-            transition: all .18s ease;
-            white-space: nowrap;
+            transition: all .15s;
         }
 
             .filter-chip:hover {
                 border-color: #dc2626;
                 color: #dc2626;
-                background: #fff5f5;
             }
 
             .filter-chip.active {
@@ -135,13 +55,12 @@
                 color: #fff;
             }
 
-        /* ── Section Cards ── */
         .section-card {
             background: #fff;
             border: 1px solid #e5e7eb;
             border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+            padding: 20px 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
 
@@ -150,143 +69,82 @@
             font-weight: 700;
             color: #111827;
             margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        /* ── Tabs ── */
-        .report-tabs {
-            display: flex;
-            gap: 4px;
-            border-bottom: 2px solid #f3f4f6;
-            margin-bottom: 20px;
-        }
-
-        .report-tab {
-            padding: 10px 20px;
-            font-weight: 600;
-            font-size: 0.88rem;
-            color: #6b7280;
-            border: none;
-            background: none;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
-            transition: all .18s;
-        }
-
-            .report-tab:hover {
-                color: #dc2626;
-            }
-
-            .report-tab.active {
-                color: #dc2626;
-                border-bottom-color: #dc2626;
-            }
-
-        /* ── Table ── */
-        .report-table {
+        .data-table {
             width: 100%;
             border-collapse: collapse;
         }
 
-            .report-table th {
+            .data-table th {
                 background: #f9fafb;
-                color: #374151;
+                color: #6b7280;
                 font-weight: 700;
                 font-size: 0.8rem;
                 text-transform: uppercase;
-                letter-spacing: 0.04em;
                 padding: 10px 14px;
                 border-bottom: 1px solid #e5e7eb;
             }
 
-            .report-table td {
+            .data-table td {
                 padding: 11px 14px;
                 border-bottom: 1px solid #f3f4f6;
                 font-size: 0.88rem;
-                color: #374151;
             }
 
-            .report-table tr:last-child td {
+            .data-table tr:last-child td {
                 border-bottom: none;
             }
 
-            .report-table tr:hover td {
+            .data-table tr:hover td {
                 background: #fff5f5;
             }
 
-        /* ── Profit Badge ── */
-        .profit-positive {
+        .profit-pos {
             color: #16a34a;
             font-weight: 700;
         }
 
-        .profit-negative {
+        .profit-neg {
             color: #dc2626;
             font-weight: 700;
         }
 
-        /* ── Progress bar ── */
-        .progress-bar-custom {
-            height: 6px;
-            background: #f3f4f6;
-            border-radius: 999px;
-            overflow: hidden;
-            margin-top: 4px;
+        .tab-btn {
+            padding: 9px 20px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #6b7280;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-bottom: -2px;
+            transition: all .15s;
         }
 
-        .progress-fill {
-            height: 100%;
-            border-radius: 999px;
-            background: linear-gradient(90deg, #dc2626, #ef4444);
-            transition: width 0.6s ease;
-        }
+            .tab-btn:hover {
+                color: #dc2626;
+            }
 
-        /* ── Date range ── */
-        .date-range-box {
+            .tab-btn.active {
+                color: #dc2626;
+                border-bottom-color: #dc2626;
+            }
+
+        .custom-date-box {
             display: none;
-            margin-top: 12px;
             padding-top: 12px;
+            margin-top: 12px;
             border-top: 1px dashed #e5e7eb;
         }
 
-            .date-range-box.show {
+            .custom-date-box.show {
                 display: flex;
                 gap: 12px;
                 flex-wrap: wrap;
                 align-items: flex-end;
             }
-
-        /* ── Loading ── */
-        .loading-overlay {
-            display: none;
-            position: absolute;
-            inset: 0;
-            background: rgba(255,255,255,0.7);
-            border-radius: 16px;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-
-            .loading-overlay.show {
-                display: flex;
-            }
-
-        .range-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #16a34a;
-            border-radius: 999px;
-            padding: 4px 12px;
-            font-size: 0.82rem;
-            font-weight: 600;
-        }
     </style>
 </head>
 <body>
@@ -312,7 +170,7 @@
         <div class="main-content">
             <header class="topbar d-flex justify-content-between align-items-center">
                 <div>
-                    <h5>Báo cáo kinh doanh</h5>
+                    <h5>Báo cáo</h5>
                     <div class="text-muted small" id="rangeLabel">Đang tải...</div>
                 </div>
                 <div class="user-chip">
@@ -326,108 +184,109 @@
 
             <main class="page-content">
 
-                <!-- Filter -->
-                <div class="filter-bar">
-                    <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
-                        <div class="d-flex flex-wrap gap-2">
-                            <button class="filter-chip" data-filter="today">Hôm nay</button>
-                            <button class="filter-chip" data-filter="7days">7 ngày</button>
-                            <button class="filter-chip active" data-filter="month">Tháng này</button>
-                            <button class="filter-chip" data-filter="quarter">Quý này</button>
-                            <button class="filter-chip" data-filter="custom">Tuỳ chọn 📅</button>
-                        </div>
-                        <div class="range-label" id="currentRangeLabel">...</div>
+                <!-- Bộ lọc thời gian -->
+                <div class="section-card mb-4">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <span class="fw-semibold me-2" style="font-size:0.9rem">Xem theo:</span>
+                        <button class="filter-chip" data-filter="today">Hôm nay</button>
+                        <button class="filter-chip" data-filter="7days">7 ngày qua</button>
+                        <button class="filter-chip active" data-filter="month">Tháng này</button>
+                        <button class="filter-chip" data-filter="custom">Chọn ngày 📅</button>
                     </div>
-                    <div class="date-range-box" id="customRangeBox">
+                    <div class="custom-date-box" id="customDateBox">
                         <div>
                             <label class="form-label fw-semibold mb-1" style="font-size:0.82rem">Từ ngày</label>
-                            <input type="date" class="form-control form-control-sm" id="fromDate">
+                            <input type="date" class="form-control form-control-sm" id="fromDate" style="width:160px">
                         </div>
                         <div>
                             <label class="form-label fw-semibold mb-1" style="font-size:0.82rem">Đến ngày</label>
-                            <input type="date" class="form-control form-control-sm" id="toDate">
+                            <input type="date" class="form-control form-control-sm" id="toDate" style="width:160px">
                         </div>
-                        <button class="btn btn-danger btn-sm fw-bold" id="btnApply">Áp dụng</button>
-                        <button class="btn btn-outline-secondary btn-sm" id="btnReset">Xoá</button>
+                        <button class="btn btn-danger btn-sm fw-bold px-3" id="btnApply">Xem</button>
                     </div>
                 </div>
 
-                <!-- KPI Grid -->
-                <div class="kpi-grid">
-                    <div class="kpi-card revenue">
-                        <div class="kpi-icon">💰</div>
-                        <div class="kpi-label">Doanh thu</div>
-                        <div class="kpi-value text-danger" id="kpiRevenue">...</div>
-                        <div class="kpi-sub" id="kpiRevenueOrders">0 đơn đã thanh toán</div>
+                <!-- 4 ô tóm tắt -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3 col-6">
+                        <div class="summary-card">
+                            <div class="label">💰 Tổng tiền bán được</div>
+                            <div class="value text-danger" id="sumRevenue">...</div>
+                            <div class="sub" id="sumRevenueOrders">0 đơn hàng</div>
+                        </div>
                     </div>
-                    <div class="kpi-card cost">
-                        <div class="kpi-icon">📦</div>
-                        <div class="kpi-label">Giá vốn hàng bán</div>
-                        <div class="kpi-value" style="color:#d97706" id="kpiCOGS">...</div>
-                        <div class="kpi-sub" id="kpiChiPhiNhap">Chi phí nhập: ...</div>
+                    <div class="col-md-3 col-6">
+                        <div class="summary-card">
+                            <div class="label">📦 Tổng tiền nhập hàng</div>
+                            <div class="value" style="color:#d97706" id="sumImport">...</div>
+                            <div class="sub" id="sumImportCount">0 phiếu nhập</div>
+                        </div>
                     </div>
-                    <div class="kpi-card profit">
-                        <div class="kpi-icon">📈</div>
-                        <div class="kpi-label">Lợi nhuận gộp</div>
-                        <div class="kpi-value" style="color:#16a34a" id="kpiProfit">...</div>
-                        <div class="kpi-sub" id="kpiMarginSub">Biên lợi nhuận: ...%</div>
-                    </div>
-                    <div class="kpi-card orders">
-                        <div class="kpi-icon">🛒</div>
-                        <div class="kpi-label">Tổng đơn hàng</div>
-                        <div class="kpi-value" style="color:#2563eb" id="kpiOrders">...</div>
-                        <div class="kpi-sub" id="kpiOrdersSub">Chờ: 0 | Huỷ: 0</div>
-                    </div>
-                    <div class="kpi-card avg">
-                        <div class="kpi-icon">🎯</div>
-                        <div class="kpi-label">Giá trị TB / đơn</div>
-                        <div class="kpi-value" style="color:#7c3aed" id="kpiAvg">...</div>
-                        <div class="kpi-sub">Trên các đơn đã thanh toán</div>
-                    </div>
-                    <div class="kpi-card margin">
-                        <div class="kpi-icon">💹</div>
-                        <div class="kpi-label">Biên lợi nhuận</div>
-                        <div class="kpi-value" style="color:#0891b2" id="kpiMargin">...%</div>
-                        <div class="kpi-sub">
-                            <div class="progress-bar-custom">
-                                <div class="progress-fill" id="marginBar" style="width:0%"></div>
-                            </div>
+                    <div class="col-md-3 col-6">
+                        <div class="summary-card">
+                            <div class="label">📈 Lời ước tính</div>
+                            <div class="value" id="sumProfit">...</div>
+                            <div class="sub">Tiền bán − Giá vốn hàng bán</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tabs -->
-                <div class="report-tabs">
-                    <button class="report-tab active" data-tab="doanhThu">📊 Doanh thu & Chi phí</button>
-                    <button class="report-tab" data-tab="sanPham">🏆 Top sản phẩm</button>
-                    <button class="report-tab" data-tab="nhapHang">📥 Nhập hàng</button>
+                <!-- Tabs nội dung -->
+                <div style="border-bottom: 2px solid #f3f4f6; margin-bottom: 20px;">
+                    <button class="tab-btn active" data-tab="daily">📅 Theo ngày</button>
+                    <button class="tab-btn" data-tab="products">🏆 Sản phẩm bán chạy</button>
+                    <button class="tab-btn" data-tab="imports">📥 Phiếu nhập hàng</button>
                 </div>
 
-                <!-- Tab: Doanh thu & Chi phí -->
-                <div id="tab-doanhThu">
-                    <div class="section-card" style="position:relative">
-                        <div class="loading-overlay" id="chartLoading">
-                            <div class="spinner-border text-danger" style="width:2rem;height:2rem;"></div>
-                        </div>
-                        <div class="section-title">📊 Biểu đồ doanh thu & chi phí theo ngày</div>
-                        <canvas id="revenueChart" height="100"></canvas>
-                    </div>
-
+                <!-- Tab: Theo ngày -->
+                <div id="tab-daily">
                     <div class="section-card">
-                        <div class="section-title">📋 Chi tiết theo ngày</div>
+                        <div class="section-title">📊 Biểu đồ tiền bán & tiền nhập theo ngày</div>
+                        <canvas id="chartDaily" height="100"></canvas>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-title">📋 Chi tiết từng ngày</div>
                         <div class="table-responsive">
-                            <table class="report-table">
+                            <table class="data-table">
                                 <thead>
                                     <tr>
                                         <th>Ngày</th>
-                                        <th class="text-center">Số đơn</th>
-                                        <th class="text-end">Doanh thu</th>
-                                        <th class="text-end" style="color:#d97706">Giá vốn (COGS)</th>
-                                        <th class="text-end" style="color:#7c3aed">Tiền nhập hàng</th>
-                                        <th class="text-end">Lợi nhuận gộp</th>
+                                        <th class="text-center">Số đơn bán</th>
+                                        <th class="text-end">Tiền bán</th>
                                     </tr>
                                 </thead>
-                                <tbody id="dailyTableBody">
+                                <tbody id="dailyBody">
+                                    <tr><td colspan="3" class="text-center text-muted py-4">Đang tải...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Sản phẩm bán chạy -->
+                <div id="tab-products" class="d-none">
+                    <div class="section-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="section-title mb-0">🏆 Sản phẩm bán nhiều nhất</div>
+                            <select class="form-select form-select-sm" style="width:auto" id="topLimit" onchange="loadTopProducts()">
+                                <option value="5">Top 5</option>
+                                <option value="10" selected>Top 10</option>
+                                <option value="20">Top 20</option>
+                            </select>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Tên sản phẩm</th>
+                                        <th class="text-center">Số lượng bán</th>
+                                        <th class="text-end">Tiền bán</th>
+                                        <th class="text-end">Giá vốn</th>
+                                        <th class="text-end">Lời</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsBody">
                                     <tr><td colspan="6" class="text-center text-muted py-4">Đang tải...</td></tr>
                                 </tbody>
                             </table>
@@ -435,68 +294,21 @@
                     </div>
                 </div>
 
-                <!-- Tab: Top sản phẩm -->
-                <div id="tab-sanPham" class="d-none">
+                <!-- Tab: Phiếu nhập hàng -->
+                <div id="tab-imports" class="d-none">
                     <div class="section-card">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="section-title mb-0">🏆 Top sản phẩm bán chạy</div>
-                            <select class="form-select form-select-sm" style="width:auto" id="topProductsLimit">
-                                <option value="5">Top 5</option>
-                                <option value="10" selected>Top 10</option>
-                                <option value="20">Top 20</option>
-                            </select>
-                        </div>
+                        <div class="section-title">📥 Danh sách phiếu nhập hàng trong kỳ</div>
                         <div class="table-responsive">
-                            <table class="report-table">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Sản phẩm</th>
-                                        <th class="text-center">Số lượng bán</th>
-                                        <th class="text-end">Doanh thu</th>
-                                        <th class="text-end">Giá vốn</th>
-                                        <th class="text-end">Lợi nhuận</th>
-                                        <th class="text-end">Biên LN</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="topProductsBody">
-                                    <tr><td colspan="7" class="text-center text-muted py-4">Đang tải...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab: Nhập hàng -->
-                <div id="tab-nhapHang" class="d-none">
-                    <div class="kpi-grid" style="grid-template-columns: repeat(2,1fr); max-width:600px; margin-bottom:20px;">
-                        <div class="kpi-card cost">
-                            <div class="kpi-icon">📥</div>
-                            <div class="kpi-label">Tổng chi phí nhập</div>
-                            <div class="kpi-value" style="color:#d97706" id="nhapTongChiPhi">...</div>
-                            <div class="kpi-sub" id="nhapSoPhieu">0 phiếu nhập</div>
-                        </div>
-                        <div class="kpi-card revenue">
-                            <div class="kpi-icon">💸</div>
-                            <div class="kpi-label">Doanh thu kỳ này</div>
-                            <div class="kpi-value text-danger" id="nhapDoanhThu">...</div>
-                            <div class="kpi-sub">So với chi phí nhập</div>
-                        </div>
-                    </div>
-
-                    <div class="section-card">
-                        <div class="section-title">📥 Danh sách phiếu nhập</div>
-                        <div class="table-responsive">
-                            <table class="report-table">
+                            <table class="data-table">
                                 <thead>
                                     <tr>
                                         <th>Mã phiếu</th>
                                         <th>Ngày nhập</th>
                                         <th>Nhà cung cấp</th>
-                                        <th class="text-end">Tổng tiền</th>
+                                        <th class="text-end">Tổng tiền nhập</th>
                                     </tr>
                                 </thead>
-                                <tbody id="nhapHangBody">
+                                <tbody id="importsBody">
                                     <tr><td colspan="4" class="text-center text-muted py-4">Đang tải...</td></tr>
                                 </tbody>
                             </table>
