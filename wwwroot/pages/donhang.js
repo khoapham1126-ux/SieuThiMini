@@ -26,21 +26,18 @@ async function loadOrders() {
     } catch (err) {
         alertBox.textContent = err.message;
         alertBox.classList.remove("d-none");
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Không tải được dữ liệu</td></tr>`;
+        // Sửa colspan thành 6
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Không tải được dữ liệu</td></tr>`;
     }
 }
 
 function renderStats(orders) {
     const total = orders.length;
-    const paid = orders.filter(o => o.trangThai === "DaThanhToan").length;
-    const pending = orders.filter(o => o.trangThai === "ChoThanhToan").length;
-    const revenue = orders
-        .filter(o => o.trangThai === "DaThanhToan")
-        .reduce((sum, o) => sum + (o.tongTien || 0), 0);
+    // Tính doanh thu trên toàn bộ đơn hàng hiển thị
+    const revenue = orders.reduce((sum, o) => sum + (o.tongTien || 0), 0);
 
     document.getElementById("statTotal").textContent = total;
-    document.getElementById("statPaid").textContent = paid;
-    document.getElementById("statPending").textContent = pending;
+    // Đã xóa dòng statPaid và statPending để tránh lỗi null
     document.getElementById("statRevenue").textContent = formatCurrency(revenue);
 }
 
@@ -49,7 +46,8 @@ function renderOrders(orders) {
     const filterInfo = document.getElementById("filterInfo");
 
     if (!orders || orders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">Không có đơn hàng nào</td></tr>`;
+        // Sửa colspan thành 6
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">Không có đơn hàng nào</td></tr>`;
         filterInfo.textContent = "";
         return;
     }
@@ -61,7 +59,6 @@ function renderOrders(orders) {
             <td>${order.khachHangTen || "Khách lẻ"}</td>
             <td>${order.nhanVienTen || "Nhân viên"}</td>
             <td class="text-end fw-semibold">${formatCurrency(order.tongTien)}</td>
-            <td class="text-center">${renderStatusBadge(order.trangThai)}</td>
             <td class="text-center">
                 <button class="btn btn-sm btn-outline-primary" onclick="loadOrderDetail(${order.id})">
                     Xem chi tiết
@@ -94,27 +91,22 @@ async function loadOrderDetail(orderId) {
         const data = await res.json();
         currentOrderDetail = data;
 
+        // Đã xóa ô "Trạng thái" trong modal, chia lại col-md-4 cho 3 ô còn lại
         body.innerHTML = `
             <div class="row g-3 mb-3">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="summary-box">
                         <div class="text-muted small">Mã đơn</div>
                         <div class="fw-semibold">#${data.id}</div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="summary-box">
                         <div class="text-muted small">Khách hàng</div>
                         <div class="fw-semibold">${data.khachHangTen || "Khách lẻ"}</div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="summary-box">
-                        <div class="text-muted small">Trạng thái</div>
-                        <div class="fw-semibold">${translateStatus(data.trangThai)}</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="summary-box">
                         <div class="text-muted small">Tổng tiền</div>
                         <div class="fw-semibold text-danger">${formatCurrency(data.tongTien)}</div>
@@ -153,42 +145,16 @@ async function loadOrderDetail(orderId) {
     }
 }
 
-function renderStatusBadge(status) {
-    const map = {
-        "DaThanhToan": { label: "Đã thanh toán", cls: "badge-paid" },
-        "ChoThanhToan": { label: "Chờ thanh toán", cls: "badge-pending" },
-        "DaHuy": { label: "Đã huỷ", cls: "badge-cancelled" },
-    };
-    const info = map[status] || { label: status || "Không rõ", cls: "bg-secondary" };
-    return `<span class="badge ${info.cls}">${info.label}</span>`;
-}
-
-function translateStatus(status) {
-    switch ((status || "").toLowerCase()) {
-        case "dathanhtoan":
-            return "Đã thanh toán";
-        case "chothanhtoan":
-            return "Chờ thanh toán";
-        case "dahuy":
-            return "Đã huỷ";
-        default:
-            return status || "—";
-    }
-}
+// Đã xóa hàm renderStatusBadge và translateStatus để làm sạch code
 
 function filterOrders() {
     const searchVal = document.getElementById("searchInput").value.trim().toLowerCase();
-    const statusVal = document.getElementById("statusFilter").value;
     const dateVal = document.getElementById("dateFilter").value;
 
     let filtered = allOrders;
 
     if (searchVal) {
         filtered = filtered.filter(o => String(o.id).includes(searchVal));
-    }
-
-    if (statusVal) {
-        filtered = filtered.filter(o => o.trangThai === statusVal);
     }
 
     if (dateVal) {
@@ -205,7 +171,6 @@ function filterOrders() {
 
 function resetFilter() {
     document.getElementById("searchInput").value = "";
-    document.getElementById("statusFilter").value = "";
     document.getElementById("dateFilter").value = "";
     renderOrders(allOrders);
 }
@@ -220,4 +185,4 @@ function formatDate(dateStr) {
     const date = d.toLocaleDateString("vi-VN");
     const time = d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
     return `${date} ${time}`;
-}   
+}
