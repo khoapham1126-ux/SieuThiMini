@@ -1,4 +1,4 @@
-﻿  /**
+﻿/**
  * sanpham.js — Trang Sản Phẩm
  * Đặt trong: wwwroot/pages/sanpham.js
  *
@@ -160,8 +160,6 @@ function moModalThem() {
     document.getElementById("f-mavach").value = "";
     document.getElementById("f-danhmuc").value = "";
     document.getElementById("f-ncc").value = "";
-    document.getElementById("f-giavon").value = "";
-    document.getElementById("f-giaban").value = "";
     document.getElementById("f-donvi").value = "";
     document.getElementById("f-trangthai").checked = true;
     document.getElementById("modalAlert").classList.add("d-none");
@@ -174,8 +172,6 @@ async function luuSanPham() {
     const maVach = document.getElementById("f-mavach").value.trim();
     const maDanhMuc = parseInt(document.getElementById("f-danhmuc").value);
     const maNCC = parseInt(document.getElementById("f-ncc").value);
-    const giaVon = parseInt(document.getElementById("f-giavon").value);
-    const giaBan = parseInt(document.getElementById("f-giaban").value);
     const donViTinh = document.getElementById("f-donvi").value.trim();
     const trangthai = document.getElementById("f-trangthai").checked;
 
@@ -183,9 +179,7 @@ async function luuSanPham() {
     if (!ten) return showAlert("modalAlert", "danger", "Vui lòng nhập tên sản phẩm!");
     if (!maDanhMuc) return showAlert("modalAlert", "danger", "Vui lòng chọn danh mục!");
     if (!maNCC) return showAlert("modalAlert", "danger", "Vui lòng chọn nhà cung cấp!");
-    if (!giaVon || giaVon < 0) return showAlert("modalAlert", "danger", "Giá vốn không hợp lệ!");
-    if (!giaBan || giaBan < 0) return showAlert("modalAlert", "danger", "Giá bán không hợp lệ!");
-    if (giaBan < giaVon) return showAlert("modalAlert", "warning", "Giá bán đang thấp hơn giá vốn!");
+
 
     const btn = document.getElementById("btnLuu");
     btn.disabled = true;
@@ -201,8 +195,6 @@ async function luuSanPham() {
                 maVach: maVach,
                 maDanhMuc: maDanhMuc,
                 maNhaCungCap: maNCC,
-                giaVon: giaVon,
-                giaBan: giaBan,
                 donViTinh: donViTinh || "Cái",
                 trangthai: trangthai
             })
