@@ -22,6 +22,25 @@ namespace WebApplication1.Controllers
         {
             if (lich == null) return BadRequest();
 
+            var allowedShifts = new[] { "Sáng", "Chiều", "Tối" };
+            if (!allowedShifts.Contains(lich.Ca))
+            {
+                return BadRequest(new { message = "Ca làm không hợp lệ. Chỉ chấp nhận Sáng, Chiều, Tối." });
+            }
+
+            var startOfDay = lich.NgayLam.Date;
+            var endOfDay = startOfDay.AddDays(1);
+            var duplicatedShift = await _context.LichLamViecs.AnyAsync(l =>
+                l.NhanVienId == lich.NhanVienId &&
+                l.Ca == lich.Ca &&
+                l.NgayLam >= startOfDay &&
+                l.NgayLam < endOfDay);
+
+            if (duplicatedShift)
+            {
+                return BadRequest(new { message = "Nhân viên đã được đăng ký ca này trong ngày đã chọn." });
+            }
+
             _context.LichLamViecs.Add(lich);
             await _context.SaveChangesAsync();
             return Ok(new { message = "Xếp lịch thành công!", data = lich });
