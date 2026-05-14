@@ -313,10 +313,16 @@ async function searchByBarcode() {
 
     try {
         const res = await fetch(`/api/SanPham/mavach/${encodeURIComponent(barcode)}`);
-        const data = await res.json();
+
+        let data = null;
+        try {
+            data = await res.json();
+        } catch {
+            data = null;
+        }
 
         if (!res.ok) {
-            showProductError(data.message || `Không tìm thấy: ${barcode}`);
+            showProductError(data?.message || `Không tìm thấy: ${barcode}`);
             input.select();
             return;
         }
@@ -324,7 +330,8 @@ async function searchByBarcode() {
         await displayProduct(data);
         input.value = "";
         input.focus();
-    } catch {
+    } catch (err) {
+        console.error("searchByBarcode error:", err);
         showProductError("Lỗi kết nối đến server.");
     }
 }
@@ -343,49 +350,38 @@ async function selectProductBySearch(barcode) {
 
     try {
         const res = await fetch(`/api/SanPham/mavach/${encodeURIComponent(barcode)}`);
-        const data = await res.json();
+
+        let data = null;
+        try {
+            data = await res.json();
+        } catch {
+            data = null;
+        }
 
         if (!res.ok) {
-            showProductError(data.message || `Không tìm thấy: ${barcode}`);
+            showProductError(data?.message || `Không tìm thấy: ${barcode}`);
             return;
         }
 
         await displayProduct(data);
-    } catch {
+    } catch (err) {
+        console.error("selectProductBySearch error:", err);
         showProductError("Lỗi kết nối đến server.");
     }
 }
-
 async function displayProduct(data) {
     currentProduct = data;
-    const km = getActiveKhuyenMai(data.maSanPham);
 
     document.getElementById("productName").textContent = data.tenSanPham;
     document.getElementById("productBarcode").textContent = data.maVach;
 
-    if (km) {
-        const giaGoc = data.giaBan;
-        const giaGiam = Math.round(giaGoc * (1 - km.phanTramGiam / 100));
+    document.getElementById("productSaleBadge").classList.add("d-none");
+    document.getElementById("productOriginalPrice").classList.add("d-none");
+    document.getElementById("productSaleInfo").classList.add("d-none");
 
-        document.getElementById("productSaleBadge").classList.remove("d-none");
-        document.getElementById("productOriginalPrice").classList.remove("d-none");
-        document.getElementById("productOriginalPrice").textContent = formatCurrency(giaGoc);
-        document.getElementById("productPrice").textContent = formatCurrency(giaGiam);
-
-        const saleInfo = document.getElementById("productSaleInfo");
-        saleInfo.classList.remove("d-none");
-        saleInfo.textContent = `🏷 ${km.ten} — Giảm ${km.phanTramGiam}%`;
-
-        currentProduct._giaThucTe = giaGiam;
-        currentProduct._khuyenMai = km;
-    } else {
-        document.getElementById("productSaleBadge").classList.add("d-none");
-        document.getElementById("productOriginalPrice").classList.add("d-none");
-        document.getElementById("productSaleInfo").classList.add("d-none");
-        document.getElementById("productPrice").textContent = formatCurrency(data.giaBan);
-        currentProduct._giaThucTe = data.giaBan;
-        currentProduct._khuyenMai = null;
-    }
+    document.getElementById("productPrice").textContent = formatCurrency(data.giaBan);
+    currentProduct._giaThucTe = data.giaBan;
+    currentProduct._khuyenMai = null;
 
     document.getElementById("productCard").classList.remove("d-none");
 }
@@ -659,7 +655,7 @@ function generateQRCode(total) {
 function getFinalTotal() {
     const afterProductDiscount = cart.reduce((s, i) => s + i.giaThucTe * i.soLuong, 0);
     const pointDiscount = usedPoints * 70;
-    return Math.max(0, afterProductDiscount - couponDiscount - pointDiscount);
+    return Math.max(0, afterProductDiscount - pointDiscount);
 }
 
 function tinhTienThua() {
