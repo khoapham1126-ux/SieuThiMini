@@ -12,7 +12,6 @@ namespace WebApplication1.Data
         public DbSet<DonHang> DonHangs { get; set; }
         public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
         public DbSet<HoaDon> HoaDons { get; set; }
-        public DbSet<KhuyenMai> KhuyenMais { get; set; }
         public DbSet<KhachHang> KhachHangs { get; set; }
         public DbSet<TonKho> TonKhos { get; set; }
         public DbSet<LoHang> LoHangs { get; set; }
@@ -23,7 +22,6 @@ namespace WebApplication1.Data
         public DbSet<CanhBao> CanhBaos { get; set; }
         public DbSet<LichLamViec> LichLamViecs { get; set; }
         public DbSet<BaoCao> BaoCaos { get; set; }
-        //public DbSet<KhuyenMai> KhuyenMais { get; set; }
 
     }
 }

@@ -83,11 +83,16 @@
                 <li class="nav-item"><a class="nav-link" href="tonkho.html">Tồn kho</a></li>
                 <li class="nav-item"><a class="nav-link" href="phieunhap.html">Nhập hàng</a></li>
                 <li class="nav-item"><a class="nav-link active" href="sanpham.html">Sản phẩm</a></li>
-                <li class="nav-item"><a class="nav-link" href="nhanvien.html">Nhân viên</a></li>
                 <li class="nav-item"><a class="nav-link" href="khachhang.html">Khách hàng</a></li>
                 <li class="nav-item"><a class="nav-link" href="nhacc.html">Nhà cung cấp</a></li>
                 <li class="nav-item"><a class="nav-link" href="canhbao.html">Cảnh báo</a></li>
-                <li class="nav-item"><a class="nav-link" href="baocao.html">Báo cáo</a></li>
+                <li class="nav-item d-none role-manager-only">
+                    <a class="nav-link" href="nhanvien.html">Nhân viên</a>
+                </li>
+                <li class="nav-item d-none role-manager-only">
+                    <a class="nav-link" href="baocao.html">Báo cáo</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="lichlam.html">Lịch Làm</a></li>
                 <li class="nav-item mt-2"><a class="nav-link text-danger" href="#" onclick="logout()">Đăng xuất</a></li>
             </ul>
         </aside>
@@ -229,7 +234,7 @@
 
                             <!-- Mã vạch -->
                             <div class="col-md-4">
-                                <label class="form-label">Mã vạch</label>
+                                <label class="form-label">Mã vạch <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="f-mavach" placeholder="VD: 8934673123456">
                             </div>
 
@@ -263,9 +268,9 @@
 
                             <!-- Đơn vị tính -->
                             <div class="col-md-4">
-                                <label class="form-label">Đơn vị tính</label>
+                                <label class="form-label">Đơn vị tính <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="f-donvi"
-                                       placeholder="VD: Thùng,Hộp,Cái (cách nhau bằng dấu phẩy)">
+                                       placeholder="VD: Cái">
                             </div>
 
                             <!-- Trạng thái -->

@@ -1,20 +1,17 @@
 ﻿/**
  * canhbao.js — Trang Cảnh Báo
- * Đặt trong: wwwroot/pages/canhbao.js
- *
- * API sử dụng:
- *   GET /api/CanhBao          → load danh sách
- *   PUT /api/CanhBao/{id}     → cập nhật DaXuLy = true
+ * Realtime auto refresh
  */
 
 const API_URL = "/api/CanhBao";
 
 let allData = [];
 let filteredData = [];
+let refreshTimer = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
-    await quetCanhBao(); // quét trước
-    await loadCanhBao(); // rồi mới load danh sách
+    await refreshCanhBao();
+    startAutoRefresh();
 });
 
 async function quetCanhBao() {
@@ -23,6 +20,20 @@ async function quetCanhBao() {
     } catch {
         // bỏ qua nếu lỗi, vẫn load danh sách bình thường
     }
+}
+
+// ── AUTO REFRESH ─────────────────────────────────────────────
+async function refreshCanhBao() {
+    await quetCanhBao();
+    await loadCanhBao();
+}
+
+function startAutoRefresh() {
+    if (refreshTimer) clearInterval(refreshTimer);
+
+    refreshTimer = setInterval(async () => {
+        await refreshCanhBao();
+    }, 5000); // 5 giây/lần
 }
 
 // ── LOAD DỮ LIỆU ─────────────────────────────────────────────
@@ -48,12 +59,19 @@ async function loadCanhBao() {
 function populateLoaiFilter() {
     const loaiSet = [...new Set(allData.map(c => c.loaiCanhBao).filter(Boolean))].sort();
     const sel = document.getElementById("loaiFilter");
+    if (!sel) return;
+
+    const current = sel.value;
+    sel.innerHTML = `<option value="">-- Tất cả loại --</option>`;
+
     loaiSet.forEach(l => {
         const opt = document.createElement("option");
         opt.value = l;
         opt.textContent = l;
         sel.appendChild(opt);
     });
+
+    sel.value = current;
 }
 
 function filterCanhBao() {
@@ -87,6 +105,7 @@ function resetFilter() {
 // ── RENDER BẢNG ──────────────────────────────────────────────
 function renderTable() {
     const tbody = document.getElementById("canhBaoBody");
+    if (!tbody) return;
 
     if (filteredData.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Không có cảnh báo nào</td></tr>`;
@@ -94,7 +113,7 @@ function renderTable() {
     }
 
     // Sắp xếp: chưa xử lý lên trên
-    const sorted = [...filteredData].sort((a, b) => a.daXuLy - b.daXuLy);
+    const sorted = [...filteredData].sort((a, b) => Number(a.daXuLy) - Number(b.daXuLy));
 
     tbody.innerHTML = sorted.map(c => {
         const badge = c.daXuLy
@@ -106,15 +125,15 @@ function renderTable() {
             : `<button class="btn-xu-ly" onclick="xacNhanXuLy(${c.id}, this)">Đã xử lý</button>`;
 
         return `
-        <tr id="row-${c.id}">
-        <td class="text-muted small">#${c.id}</td>
-        <td><span class="badge bg-secondary bg-opacity-10 text-secondary">${c.loaiCanhBao || "—"}</span></td>
-        <td>${c.noiDung || "—"}</td>
-        <td class="text-muted small">SP #${c.sanPhamId}</td>
-        <td class="small">${formatDate(c.thoiGian)}</td>
-        <td class="text-center">${badge}</td>
-        <td class="text-center">${btnXuLy}</td>
-        </tr>`;
+            <tr id="row-${c.id}">
+                <td class="text-muted small">#${c.id}</td>
+                <td><span class="badge bg-secondary bg-opacity-10 text-secondary">${c.loaiCanhBao || "—"}</span></td>
+                <td>${c.noiDung || "—"}</td>
+                <td class="text-muted small">SP #${c.sanPhamId}</td>
+                <td class="small">${formatDate(c.thoiGian)}</td>
+                <td class="text-center">${badge}</td>
+                <td class="text-center">${btnXuLy}</td>
+            </tr>`;
     }).join("");
 }
 
@@ -123,7 +142,6 @@ async function xacNhanXuLy(id, btn) {
     btn.disabled = true;
     btn.textContent = "...";
 
-    // Tìm object gốc để gửi đầy đủ body
     const item = allData.find(c => c.id === id);
     if (!item) return;
 
@@ -136,10 +154,8 @@ async function xacNhanXuLy(id, btn) {
 
         if (!res.ok) throw new Error(`Lỗi ${res.status}`);
 
-        // Cập nhật local data
-        item.daXuLy = true;
-        renderTable();
-        renderStats();
+        // refresh realtime
+        await refreshCanhBao();
         showAlert("success", `✅ Cảnh báo #${id} đã được xử lý!`);
 
     } catch (err) {
@@ -159,6 +175,8 @@ function renderStats() {
 // ── HELPERS ──────────────────────────────────────────────────
 function showAlert(type, msg) {
     const el = document.getElementById("canhBaoAlert");
+    if (!el) return;
+
     el.className = `alert alert-${type}`;
     el.textContent = msg;
     el.classList.remove("d-none");

@@ -21,11 +21,16 @@
                 <li class="nav-item"><a class="nav-link" href="tonkho.html">Tồn kho</a></li>
                 <li class="nav-item"><a class="nav-link" href="phieunhap.html">Nhập hàng</a></li>
                 <li class="nav-item"><a class="nav-link" href="sanpham.html">Sản phẩm</a></li>
-                <li class="nav-item"><a class="nav-link" href="nhanvien.html">Nhân viên</a></li>
                 <li class="nav-item"><a class="nav-link" href="khachhang.html">Khách hàng</a></li>
                 <li class="nav-item"><a class="nav-link active" href="nhacc.html">Nhà cung cấp</a></li>
                 <li class="nav-item"><a class="nav-link" href="canhbao.html">Cảnh báo</a></li>
-                <li class="nav-item"><a class="nav-link" href="baocao.html">Báo cáo</a></li>
+                <li class="nav-item d-none role-manager-only">
+                    <a class="nav-link" href="nhanvien.html">Nhân viên</a>
+                </li>
+                <li class="nav-item d-none role-manager-only">
+                    <a class="nav-link" href="baocao.html">Báo cáo</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="lichlam.html">Lịch Làm</a></li>
                 <li class="nav-item mt-2"><a class="nav-link text-danger" href="#" onclick="logout()">Đăng xuất</a></li>
             </ul>
         </aside>
@@ -48,6 +53,7 @@
             <main class="page-content">
                 <div class="card-ui p-4 mb-4">
                     <h5 class="fw-bold mb-3">Thêm nhà cung cấp mới</h5>
+                    <div id="providerAlert" class="alert d-none py-2 mb-3"></div>
                     <form id="formNCC" class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Tên nhà cung cấp</label>

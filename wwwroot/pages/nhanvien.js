@@ -1,9 +1,18 @@
 ﻿let employeeModal;
 
 document.addEventListener("DOMContentLoaded", () => {
+    if (!isManager()) {
+        const alertBox = document.getElementById("employeeAlert");
+        alertBox.classList.remove("d-none");
+        alertBox.className = "alert alert-warning";
+        alertBox.textContent = "Bạn không có quyền truy cập mục Nhân viên.";
+        document.getElementById("employeeForm").classList.add("d-none");
+        document.querySelector("[onclick='openAddEmployee()']").classList.add("d-none");
+        return;
+    }
+
     employeeModal = new bootstrap.Modal(document.getElementById("employeeModal"));
     loadEmployees();
-
     document.getElementById("employeeForm").addEventListener("submit", saveEmployee);
 });
 
@@ -34,13 +43,16 @@ async function loadEmployees() {
                 : `<span class="badge badge-role-staff">Nhân viên</span>`}
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick='openEditEmployee(${JSON.stringify(item)})'>Sửa</button>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick='openEditEmployee(${JSON.stringify(item)})'>Sửa</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee(${item.id})">Xoá</button>
                 </td>
             </tr>
         `).join("");
+
     } catch (error) {
         alertBox.textContent = error.message;
         alertBox.classList.remove("d-none");
+        alertBox.className = "alert alert-danger";
         tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Không tải được dữ liệu</td></tr>`;
     }
 }
@@ -71,6 +83,7 @@ async function saveEmployee(e) {
     e.preventDefault();
 
     const id = document.getElementById("employeeId").value;
+    const password = document.getElementById("passWord").value.trim();
 
     const body = {
         HoTen: document.getElementById("fullName").value.trim(),
@@ -79,10 +92,8 @@ async function saveEmployee(e) {
         SoDienThoai: document.getElementById("phone").value.trim()
     };
 
-    const password = document.getElementById("passWord").value.trim();
-
     if (!id && !password) {
-        alert("Vui lòng nhập mật khẩu cho nhân viên mới");
+        showEmployeeAlert("warning", "Vui lòng nhập mật khẩu cho nhân viên mới");
         return;
     }
 
@@ -90,27 +101,63 @@ async function saveEmployee(e) {
         body.MatKhau = password;
     }
 
-    const url = id ? `/api/NhanVien/${id}` : "/api/NhanVien";
-    const method = id ? "PUT" : "POST";
-
     if (id) {
         body.Id = Number(id);
     }
 
+    const url = id ? `/api/NhanVien/${id}` : "/api/NhanVien";
+    const method = id ? "PUT" : "POST";
+
     try {
         const response = await fetch(url, {
             method,
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body)
         });
 
-        if (!response.ok) throw new Error("Lưu nhân viên thất bại");
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Lưu nhân viên thất bại");
+        }
 
         employeeModal.hide();
+        showEmployeeAlert("success", id ? "Sửa nhân viên thành công!" : "Thêm nhân viên thành công!");
         loadEmployees();
     } catch (error) {
-        alert(error.message);
+        showEmployeeAlert("danger", error.message);
     }
+}
+
+async function deleteEmployee(id) {
+    if (!confirm("Bạn có chắc muốn xoá nhân viên này không?")) return;
+
+    try {
+        const response = await fetch(`/api/NhanVien/${id}`, {
+            method: "DELETE"
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Xoá nhân viên thất bại");
+        }
+
+        showEmployeeAlert("success", "Xoá nhân viên thành công!");
+        loadEmployees();
+    } catch (error) {
+        showEmployeeAlert("danger", error.message);
+    }
+}
+
+function showEmployeeAlert(type, msg) {
+    const el = document.getElementById("employeeAlert");
+    if (!el) return;
+
+    el.className = `alert alert-${type}`;
+    el.textContent = msg;
+    el.classList.remove("d-none");
+
+    clearTimeout(window.employeeAlertTimer);
+    window.employeeAlertTimer = setTimeout(() => {
+        el.classList.add("d-none");
+    }, 3000);
 }

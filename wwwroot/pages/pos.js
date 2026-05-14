@@ -4,18 +4,15 @@
 
 let cart = [];
 let currentProduct = null;
-let khuyenMaiList = [];
 let checkoutModal = null;
 let selectedPayment = "TienMat";
 let html5QrcodeScanner = null;
 let isCameraOn = false;
-let appliedCoupon = null;
 let selectedCustomerData = null;
 let usedPoints = 0;
 let allProducts = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadKhuyenMai();
     loadProducts();
     checkoutModal = new bootstrap.Modal(document.getElementById("checkoutModal"));
 
@@ -221,16 +218,6 @@ function getNhanVienId() {
     return parseInt(localStorage.getItem("staffId") || "1");
 }
 
-async function loadKhuyenMai() {
-    try {
-        const res = await fetch("/api/KhuyenMai");
-        if (!res.ok) return;
-        khuyenMaiList = await res.json();
-    } catch {
-        khuyenMaiList = [];
-    }
-}
-
 function toggleCamera() {
     if (isCameraOn) stopCamera();
     else startCamera();
@@ -257,13 +244,31 @@ function startCamera() {
 
         const cameraId = cameras[cameras.length - 1].id;
 
+        let lastScanText = "";
+        let lastScanTime = 0;
+
         html5QrcodeScanner.start(
             cameraId,
             { fps: 10, qrbox: { width: 220, height: 120 }, aspectRatio: 1.6 },
-            (decodedText) => {
-                document.getElementById("barcodeInput").value = decodedText;
-                searchByBarcode();
-                stopCamera();
+            async (decodedText) => {
+                const now = Date.now();
+
+                if (decodedText === lastScanText && now - lastScanTime < 1000) {
+                    return;
+                }
+
+                lastScanText = decodedText;
+                lastScanTime = now;
+
+                const input = document.getElementById("barcodeInput");
+                if (input) input.value = decodedText;
+
+                await searchByBarcode();
+
+                if (input) {
+                    input.value = "";
+                    input.focus();
+                }
             },
             () => { }
         ).catch(err => {
@@ -391,75 +396,6 @@ function showProductError(msg) {
     el.classList.remove("d-none");
 }
 
-function getActiveKhuyenMai() {
-    if (!khuyenMaiList || khuyenMaiList.length === 0) return null;
-    const now = new Date();
-    return khuyenMaiList.find(km => {
-        const start = new Date(km.ngayBatDau);
-        const end = new Date(km.ngayKetThuc);
-        return now >= start && now <= end;
-    }) || null;
-}
-
-async function applyMaKhuyenMai() {
-    const input = document.getElementById("maKhuyenMaiInput");
-    const code = (input?.value || "").trim();
-    const btnApply = document.getElementById("btnApplyCoupon");
-
-    if (!code) {
-        showCouponResult("warning", "⚠️ Vui lòng nhập mã khuyến mãi.");
-        return;
-    }
-
-    btnApply.disabled = true;
-    btnApply.textContent = "Đang kiểm tra...";
-
-    try {
-        await loadKhuyenMai();
-
-        const found = khuyenMaiList.find(km => {
-            const ten = (km.ten ?? km.Ten ?? "").trim().toLowerCase();
-            const phanTramGiam = (km.phanTramGiam ?? km.PhanTramGiam ?? 0);
-            const ghiChu = (km.ghiChu ?? km.GhiChu ?? "").trim().toLowerCase();
-
-            const match = ten === code.toLowerCase();
-            const conHieuLuc = ghiChu.includes("còn");
-
-            return match && conHieuLuc && phanTramGiam > 0;
-        });
-
-        if (!found) {
-            appliedCoupon = null;
-            showCouponResult("danger", "❌ Mã không hợp lệ hoặc đã hết hạn.");
-        } else {
-            appliedCoupon = found;
-            showCouponResult("success", `✅ Áp dụng thành công: "${found.ten}" — Giảm ${found.phanTramGiam}% toàn đơn`);
-            updateTotal();
-        }
-    } catch {
-        showCouponResult("danger", "Lỗi kết nối khi kiểm tra mã.");
-    } finally {
-        btnApply.disabled = false;
-        btnApply.textContent = "Áp dụng";
-    }
-}
-
-function removeCoupon() {
-    appliedCoupon = null;
-    const input = document.getElementById("maKhuyenMaiInput");
-    if (input) input.value = "";
-    showCouponResult("secondary", "Đã xóa mã khuyến mãi.");
-    updateTotal();
-}
-
-function showCouponResult(type, msg) {
-    const el = document.getElementById("couponResult");
-    if (!el) return;
-    el.className = `alert alert-${type} py-2 small mt-2`;
-    el.textContent = msg;
-    el.classList.remove("d-none");
-}
-
 function addToCart() {
     if (!currentProduct) return;
 
@@ -555,18 +491,11 @@ function clearCart() {
 
 function updateTotal() {
     const totalItems = cart.reduce((s, i) => s + i.soLuong, 0);
-
     const subtotal = cart.reduce((s, i) => s + i.sanPham.giaBan * i.soLuong, 0);
     const afterProductDiscount = cart.reduce((s, i) => s + i.giaThucTe * i.soLuong, 0);
     const productDiscount = subtotal - afterProductDiscount;
-
-    let couponDiscount = 0;
-    if (appliedCoupon && appliedCoupon.phanTramGiam > 0) {
-        couponDiscount = Math.round(afterProductDiscount * appliedCoupon.phanTramGiam / 100);
-    }
-
     const pointDiscount = usedPoints * 70;
-    let finalTotal = afterProductDiscount - couponDiscount - pointDiscount;
+    let finalTotal = afterProductDiscount - pointDiscount;
     if (finalTotal < 0) finalTotal = 0;
 
     document.getElementById("totalItems").textContent = totalItems;
@@ -581,16 +510,6 @@ function updateTotal() {
         discountRow.style.setProperty("display", "none", "important");
     }
 
-    const couponRow = document.getElementById("couponDiscountRow");
-    if (couponRow) {
-        if (couponDiscount > 0) {
-            couponRow.style.removeProperty("display");
-            document.getElementById("couponDiscountAmount").textContent = `- ${formatCurrency(couponDiscount)}`;
-        } else {
-            couponRow.style.setProperty("display", "none", "important");
-        }
-    }
-
     const pointRow = document.getElementById("pointDiscountRow");
     if (pointRow) {
         if (pointDiscount > 0) {
@@ -603,7 +522,6 @@ function updateTotal() {
 
     document.getElementById("checkoutBtn").disabled = cart.length === 0;
 }
-
 function openCheckoutModal() {
     if (cart.length === 0) return;
 
@@ -740,9 +658,6 @@ function generateQRCode(total) {
 
 function getFinalTotal() {
     const afterProductDiscount = cart.reduce((s, i) => s + i.giaThucTe * i.soLuong, 0);
-    const couponDiscount = appliedCoupon
-        ? Math.round(afterProductDiscount * appliedCoupon.phanTramGiam / 100)
-        : 0;
     const pointDiscount = usedPoints * 70;
     return Math.max(0, afterProductDiscount - couponDiscount - pointDiscount);
 }

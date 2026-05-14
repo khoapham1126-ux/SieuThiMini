@@ -21,7 +21,6 @@ async function loadDashboardStats() {
         document.getElementById("todayRevenue").textContent = formatCurrency(data.todayRevenue);
         document.getElementById("monthRevenue").textContent = formatCurrency(data.monthRevenue);
         document.getElementById("todayOrders").textContent = data.todayOrders;
-        document.getElementById("pendingOrders").textContent = data.pendingOrders;
 
     } catch (error) {
         console.error("Lỗi load dashboard:", error);

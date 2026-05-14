@@ -42,6 +42,11 @@ async function createProvider() {
     const sdtEl = document.getElementById("soDienThoai");
     const emailEl = document.getElementById("email");
 
+    if (!tenNCC) {
+        showProviderAlert("warning", "Vui lòng nhập tên nhà cung cấp!");
+        return;
+    }
+
     const body = {
         Ten: tenNCC,
         DiaChi: diaChiEl ? diaChiEl.value.trim() : "",
@@ -59,10 +64,25 @@ async function createProvider() {
         if (res.ok) {
             document.getElementById("formNCC").reset();
             await loadProviderList();
+            showProviderAlert("success", "Thêm nhà cung cấp thành công!");
         } else {
-            alert("Thêm nhà cung cấp thất bại!");
+            showProviderAlert("danger", "Thêm nhà cung cấp thất bại!");
         }
     } catch (error) {
         console.error("Lỗi thêm nhà cung cấp:", error);
+        showProviderAlert("danger", "Lỗi kết nối!");
     }
+}
+
+function showProviderAlert(type, msg) {
+    const el = document.getElementById("providerAlert");
+    if (!el) return;
+
+    el.className = `alert alert-${type} py-2 mb-3`;
+    el.textContent = msg;
+    el.classList.remove("d-none");
+
+    setTimeout(() => {
+        el.classList.add("d-none");
+    }, 3000);
 }

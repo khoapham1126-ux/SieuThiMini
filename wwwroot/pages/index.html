@@ -22,11 +22,16 @@
                 <li class="nav-item"><a class="nav-link" href="tonkho.html">Tồn kho</a></li>
                 <li class="nav-item"><a class="nav-link" href="phieunhap.html">Nhập hàng</a></li>
                 <li class="nav-item"><a class="nav-link" href="sanpham.html">Sản phẩm</a></li>
-                <li class="nav-item"><a class="nav-link" href="nhanvien.html">Nhân viên</a></li>
                 <li class="nav-item"><a class="nav-link" href="khachhang.html">Khách hàng</a></li>
                 <li class="nav-item"><a class="nav-link" href="nhacc.html">Nhà cung cấp</a></li>
                 <li class="nav-item"><a class="nav-link" href="canhbao.html">Cảnh báo</a></li>
-                <li class="nav-item"><a class="nav-link" href="baocao.html">Báo cáo</a></li>
+                <li class="nav-item d-none role-manager-only">
+                    <a class="nav-link" href="nhanvien.html">Nhân viên</a>
+                </li>
+                <li class="nav-item d-none role-manager-only">
+                    <a class="nav-link" href="baocao.html">Báo cáo</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="lichlam.html">Lịch Làm</a></li>
                 <li class="nav-item mt-2"><a class="nav-link text-danger" href="#" onclick="logout()">Đăng xuất</a></li>
             </ul>
         </aside>
@@ -78,62 +83,25 @@
                     </div>
                 </div>
 
-                <div class="row mt-4 g-3">
-                    <div class="col-lg-8">
-                        <div class="card-ui p-4">
-                            <h5 class="mb-3">Thông tin nhanh</h5>
-                            <p class="text-muted mb-0">
-                                Đây là dashboard tổng quan của hệ thống Siêu Thị Mini.
-                                Dữ liệu bên trên được lấy trực tiếp từ API.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-4">
-                        <div class="card-ui p-4">
-                            <h5 class="mb-3">Trạng thái hệ thống</h5>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>API</span>
-                                <span class="badge bg-success">Online</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Frontend</span>
-                                <span class="badge bg-success">Ready</span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Người dùng</span>
-                                <span class="badge bg-primary" id="roleBadge">...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="row g-3 mt-1">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="card-ui p-4">
                             <div class="text-muted">Doanh thu hôm nay</div>
                             <h3 class="mb-0 text-success" id="todayRevenue">...</h3>
                         </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="card-ui p-4">
                             <div class="text-muted">Doanh thu tháng</div>
                             <h3 class="mb-0 text-primary" id="monthRevenue">...</h3>
                         </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="card-ui p-4">
                             <div class="text-muted">Đơn hôm nay</div>
                             <h3 class="mb-0" id="todayOrders">...</h3>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="card-ui p-4">
-                            <div class="text-muted">Đơn chờ thanh toán</div>
-                            <h3 class="mb-0 text-warning" id="pendingOrders">...</h3>
                         </div>
                     </div>
                 </div>

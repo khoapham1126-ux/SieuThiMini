@@ -7,6 +7,12 @@ let importData = null;
 
 // ── KHỞI ĐỘNG ────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
+    if (!isManager()) {
+        document.getElementById("reportAccessDenied").classList.remove("d-none");
+        document.querySelectorAll(".section-card, .summary-card, .tab-btn").forEach(el => el.classList.add("d-none"));
+        return;
+    }
+
     renderUserInfo();
     bindEvents();
     applyFilter("month");

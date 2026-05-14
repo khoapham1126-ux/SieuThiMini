@@ -1,5 +1,5 @@
 ﻿
-
+let allLichSu = [];
 const LOAI_DON_VI = ["Cái", "Thùng", "Hộp", "Kg", "Lít", "Gói", "Bộ"];
 
 let dsSanPham = [];   // cache sản phẩm từ API
@@ -137,12 +137,12 @@ function onChonSP(id) {
         tinhTongTien();
     }
 
-    // Split "Thùng,Hộp,Cái" → dropdown
+    // Chỉ dùng 1 đơn vị duy nhất
     const donViEl = document.getElementById(`sp-donvi-${id}`);
     if (donViEl) {
-        const dsdonVi = donVi.split(",").map(v => v.trim()).filter(v => v);
-        if (dsdonVi.length > 0) {
-            donViEl.innerHTML = dsdonVi.map(v => `<option value="${v}">${v}</option>`).join("");
+        if (donVi) {
+            donViEl.innerHTML = `<option value="${donVi}">${donVi}</option>`;
+            donViEl.value = donVi;
         } else {
             donViEl.innerHTML = `<option value="">-- Không có đơn vị --</option>`;
         }
@@ -235,26 +235,60 @@ async function loadLichSu() {
         if (!res.ok) throw new Error();
         const data = await res.json();
 
-        if (!data || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Chưa có phiếu nhập</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = data.slice(0, 10).map(p => `
-            <tr>
-                <td class="text-muted small">#${p.id}</td>
-                <td class="small">${formatDate(p.ngayNhap)}</td>
-                <td class="text-end fw-semibold">${Number(p.tongTien || 0).toLocaleString("vi-VN")}đ</td>
-                <td class="text-center">
-                    <button class="btn-chitiet" onclick="xemChiTiet(${p.id})">Xem</button>
-                </td>
-            </tr>`).join("");
+        allLichSu = data || [];
+        renderLichSu(allLichSu);
 
     } catch {
         tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Không tải được lịch sử</td></tr>`;
     }
 }
+function renderLichSu(data) {
+    const tbody = document.getElementById("lichSuBody");
 
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Chưa có phiếu nhập</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = data.map(p => `
+        <tr>
+            <td class="text-muted small">#${p.id}</td>
+            <td class="small">${formatDate(p.ngayNhap)}</td>
+            <td class="text-end fw-semibold">${Number(p.tongTien || 0).toLocaleString("vi-VN")}đ</td>
+            <td class="text-center">
+                <button class="btn-chitiet" onclick="xemChiTiet(${p.id})">Xem</button>
+            </td>
+        </tr>`).join("");
+}
+function filterLichSu() {
+    const from = document.getElementById("filterFromDate").value;
+    const to = document.getElementById("filterToDate").value;
+
+    let data = [...allLichSu];
+
+    if (from) {
+        data = data.filter(p => {
+            const d = new Date(p.ngayNhap);
+            const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+            return ymd >= from;
+        });
+    }
+
+    if (to) {
+        data = data.filter(p => {
+            const d = new Date(p.ngayNhap);
+            const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+            return ymd <= to;
+        });
+    }
+
+    renderLichSu(data);
+}
+function resetLichSuFilter() {
+    document.getElementById("filterFromDate").value = "";
+    document.getElementById("filterToDate").value = "";
+    renderLichSu(allLichSu);
+}
 // ── XEM CHI TIẾT PHIẾU NHẬP ──────────────────────────────────
 async function xemChiTiet(id) {
     document.getElementById("modalTitle").textContent = `Chi tiết phiếu nhập #${id}`;

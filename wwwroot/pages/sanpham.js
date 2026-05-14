@@ -181,8 +181,10 @@ async function luuSanPham() {
 
     // Validate
     if (!ten) return showAlert("modalAlert", "danger", "Vui lòng nhập tên sản phẩm!");
+    if (!maVach) return showAlert("modalAlert", "danger", "Vui lòng nhập mã vạch!");
     if (!maDanhMuc) return showAlert("modalAlert", "danger", "Vui lòng chọn danh mục!");
     if (!maNCC) return showAlert("modalAlert", "danger", "Vui lòng chọn nhà cung cấp!");
+    if (!donViTinh) return showAlert("modalAlert", "danger", "Vui lòng nhập đơn vị tính!");
     if (!giaVon || giaVon < 0) return showAlert("modalAlert", "danger", "Giá vốn không hợp lệ!");
     if (!giaBan || giaBan < 0) return showAlert("modalAlert", "danger", "Giá bán không hợp lệ!");
     if (giaBan < giaVon) return showAlert("modalAlert", "warning", "Giá bán đang thấp hơn giá vốn!");

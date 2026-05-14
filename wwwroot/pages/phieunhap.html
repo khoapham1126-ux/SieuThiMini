@@ -108,6 +108,25 @@
                 border-color: #dc2626;
                 color: #dc2626;
             }
+
+        .history-scroll {
+            height: 520px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #fff;
+        }
+
+            .history-scroll table {
+                margin-bottom: 0;
+            }
+
+            .history-scroll thead th {
+                position: sticky;
+                top: 0;
+                background: #fff;
+                z-index: 2;
+            }
     </style>
 </head>
 <body>
@@ -124,11 +143,16 @@
                 <li class="nav-item"><a class="nav-link" href="tonkho.html">Tồn kho</a></li>
                 <li class="nav-item"><a class="nav-link active" href="phieunhap.html">Nhập hàng</a></li>
                 <li class="nav-item"><a class="nav-link" href="sanpham.html">Sản phẩm</a></li>
-                <li class="nav-item"><a class="nav-link" href="nhanvien.html">Nhân viên</a></li>
                 <li class="nav-item"><a class="nav-link" href="khachhang.html">Khách hàng</a></li>
                 <li class="nav-item"><a class="nav-link" href="nhacc.html">Nhà cung cấp</a></li>
                 <li class="nav-item"><a class="nav-link" href="canhbao.html">Cảnh báo</a></li>
-                <li class="nav-item"><a class="nav-link" href="baocao.html">Báo cáo</a></li>
+                <li class="nav-item d-none role-manager-only">
+                    <a class="nav-link" href="nhanvien.html">Nhân viên</a>
+                </li>
+                <li class="nav-item d-none role-manager-only">
+                    <a class="nav-link" href="baocao.html">Báo cáo</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="lichlam.html">Lịch Làm</a></li>
                 <li class="nav-item mt-2"><a class="nav-link text-danger" href="#" onclick="logout()">Đăng xuất</a></li>
             </ul>
         </aside>
@@ -191,8 +215,25 @@
                     <div class="col-lg-5">
                         <div class="card-ui p-4">
                             <h6 class="fw-bold mb-3">Phiếu nhập gần đây</h6>
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0 table-modern">
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-5">
+                                    <input type="date" class="form-control form-control-sm" id="filterFromDate">
+                                </div>
+                                <div class="col-5">
+                                    <input type="date" class="form-control form-control-sm" id="filterToDate">
+                                </div>
+                                <div class="col-2 d-flex gap-1">
+                                    <button class="btn btn-outline-primary btn-sm w-100" onclick="filterLichSu()">Lọc</button>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end mb-2">
+                                <button class="btn btn-link btn-sm text-muted p-0" onclick="resetLichSuFilter()">Xoá lọc</button>
+                            </div>
+
+                            <div class="history-scroll">
+                                <table class="table table-hover align-middle mb-0">
                                     <thead>
                                         <tr>
                                             <th>ID</th>

@@ -6,24 +6,377 @@
     <title>Lịch làm việc - Siêu Thị Mini</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/app.css">
+    <style>
+        .page-wrap {
+            display: flex;
+            min-height: 100vh;
+            background: #f6f7fb;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 24px;
+        }
+
+        .card-ui {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+        }
+
+        .pill-tabs {
+            display: inline-flex;
+            border: 1px solid #d1d5db;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+            .pill-tabs button {
+                border: 0;
+                background: transparent;
+                padding: 12px 18px;
+                font-weight: 600;
+                color: #6b7280;
+            }
+
+                .pill-tabs button.active {
+                    background: #f3f4f6;
+                    color: #111827;
+                }
+
+        .tab-panel {
+            display: none;
+        }
+
+            .tab-panel.active {
+                display: block;
+            }
+
+        .stat-card {
+            background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+            border: 1px solid #eceef3;
+            border-radius: 18px;
+            padding: 18px;
+            text-align: center;
+            height: 100%;
+        }
+
+            .stat-card .value {
+                font-size: 2rem;
+                font-weight: 800;
+                line-height: 1;
+                margin-bottom: 8px;
+            }
+
+            .stat-card .label {
+                color: #4b5563;
+                font-weight: 600;
+            }
+
+        .value-employee {
+            color: #111827;
+        }
+
+        .value-morning {
+            color: #b45309;
+        }
+
+        .value-afternoon {
+            color: #2563eb;
+        }
+
+        .value-evening {
+            color: #6d28d9;
+        }
+
+        .week-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .week-legend {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            color: #374151;
+            font-weight: 600;
+            font-size: 0.92rem;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            display: inline-block;
+        }
+
+        .dot-morning {
+            background: #f59e0b;
+        }
+
+        .dot-afternoon {
+            background: #3b82f6;
+        }
+
+        .dot-evening {
+            background: #8b5cf6;
+        }
+
+        .schedule-table {
+            margin-bottom: 0;
+        }
+
+            .schedule-table thead th {
+                background: #fafafa;
+                text-align: center;
+                font-size: 12px;
+                color: #374151;
+                vertical-align: middle;
+                border-bottom: 1px solid #e5e7eb;
+                position: relative;
+            }
+
+            .schedule-table th:first-child {
+                text-align: left;
+                min-width: 180px;
+            }
+
+            .schedule-table td {
+                vertical-align: top;
+                text-align: center;
+                min-width: 124px;
+                height: 88px;
+                padding: 8px;
+            }
+
+        .emp-cell {
+            text-align: left !important;
+            min-width: 180px;
+            background: #fff;
+            font-weight: 700;
+        }
+
+        .emp-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 12px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .emp-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .shift-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .shift-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            line-height: 1;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .shift-morning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .shift-afternoon {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .shift-evening {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .add-slot {
+            width: 100%;
+            min-height: 32px;
+            border: 1px dashed #d1d5db;
+            border-radius: 10px;
+            color: #9ca3af;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            cursor: pointer;
+            background: #fff;
+            transition: all .15s ease;
+        }
+
+            .add-slot:hover {
+                border-color: #9ca3af;
+                color: #6b7280;
+                background: #fafafa;
+            }
+
+        .day-hint {
+            display: block;
+            margin-top: 4px;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .today-col {
+            background: #fff7ed !important;
+        }
+
+            .today-col::after {
+                content: "Hôm nay";
+                position: absolute;
+                top: 6px;
+                right: 6px;
+                font-size: 10px;
+                font-weight: 700;
+                color: #ea580c;
+                background: #ffedd5;
+                border: 1px solid #fdba74;
+                border-radius: 999px;
+                padding: 2px 6px;
+            }
+
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .attendance-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+            .attendance-card h6 {
+                font-weight: 700;
+                margin-bottom: 10px;
+            }
+
+        .attendance-summary {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .mini-stat {
+            border-radius: 14px;
+            padding: 14px;
+            text-align: center;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+        }
+
+            .mini-stat .num {
+                font-size: 1.5rem;
+                font-weight: 800;
+                line-height: 1;
+            }
+
+            .mini-stat .text {
+                font-size: 12px;
+                color: #6b7280;
+                margin-top: 6px;
+            }
+
+        .attendance-table td, .attendance-table th {
+            vertical-align: middle;
+            font-size: 13px;
+        }
+
+        .attendance-table thead th {
+            background: #f8fafc;
+        }
+
+        .schedule-empty {
+            color: #9ca3af;
+            padding: 18px 0;
+        }
+
+        @media (max-width: 992px) {
+            .main-content {
+                padding: 16px;
+            }
+
+            .attendance-grid,
+            .attendance-summary {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .schedule-table td,
+            .schedule-table th {
+                min-width: 96px;
+            }
+
+            .emp-cell {
+                min-width: 150px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .attendance-grid,
+            .attendance-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="app-wrapper">
+    <div class="page-wrap">
         <aside class="sidebar p-3">
-            <div class="brand mb-4">
-                Siêu Thị Mini
-                <small>Management Dashboard</small>
-            </div>
-
+            <div class="brand mb-4">Siêu Thị Mini<small>Management Dashboard</small></div>
             <ul class="nav flex-column">
                 <li class="nav-item"><a class="nav-link" href="index.html">Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link" href="pos.html">Bán hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="donhang.html">Đơn hàng</a></li>
                 <li class="nav-item"><a class="nav-link" href="tonkho.html">Tồn kho</a></li>
                 <li class="nav-item"><a class="nav-link" href="phieunhap.html">Nhập hàng</a></li>
-                <li class="nav-item"><a class="nav-link active" href="nhanvien.html">Nhân viên</a></li>
+                <li class="nav-item"><a class="nav-link" href="sanpham.html">Sản phẩm</a></li>
                 <li class="nav-item"><a class="nav-link" href="khachhang.html">Khách hàng</a></li>
                 <li class="nav-item"><a class="nav-link" href="nhacc.html">Nhà cung cấp</a></li>
                 <li class="nav-item"><a class="nav-link" href="canhbao.html">Cảnh báo</a></li>
+                <li class="nav-item d-none role-manager-only">
+                    <a class="nav-link" href="nhanvien.html">Nhân viên</a>
+                </li>
+                <li class="nav-item d-none role-manager-only">
+                    <a class="nav-link" href="baocao.html">Báo cáo</a>
+                </li>
+                <li class="nav-item"><a class="nav-link active" href="lichlam.html">Lịch Làm</a></li>
                 <li class="nav-item mt-2"><a class="nav-link text-danger" href="#" onclick="logout()">Đăng xuất</a></li>
             </ul>
         </aside>
@@ -31,8 +384,7 @@
         <div class="main-content">
             <header class="topbar d-flex justify-content-between align-items-center">
                 <div>
-                    <h5>Quản lý lịch làm việc</h5>
-                    <div class="text-muted small">Chọn nhân viên và thêm ca làm</div>
+                    <h5 class="mb-1">Quản lý lịch làm việc</h5>
                 </div>
                 <div class="user-chip">
                     <div class="avatar" id="userAvatar">K</div>
@@ -44,59 +396,204 @@
             </header>
 
             <main class="page-content">
-                <div class="card-ui p-4 mb-4">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-4">
-                            <label class="form-label">Chọn nhân viên</label>
-                            <select class="form-select" id="employeeSelect">
-                                <option value="">-- Chọn nhân viên --</option>
-                            </select>
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <div class="pill-tabs">
+                        <button class="active" type="button" onclick="switchTab('schedule')">📋 Lịch làm việc</button>
+                        <button type="button" onclick="switchTab('attendance')">🕒 Chấm công</button>
+                        <button type="button" onclick="switchTab('history')">🕘 Lịch sử</button>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                    </div>
+                </div>
+
+                <div id="alertBox" class="alert d-none mb-3"></div>
+
+                <div class="tab-panel active" id="scheduleTab">
+                    <div class="row g-3 mb-3" id="statCards">
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="stat-card">
+                                <div class="value value-employee" id="statEmployees">0</div>
+                                <div class="label">Nhân viên</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="stat-card">
+                                <div class="value value-morning" id="statMorning">0</div>
+                                <div class="label">Ca sáng tuần này</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="stat-card">
+                                <div class="value value-afternoon" id="statAfternoon">0</div>
+                                <div class="label">Ca chiều tuần này</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="stat-card">
+                                <div class="value value-evening" id="statEvening">0</div>
+                                <div class="label">Ca tối tuần này</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-ui p-3 p-lg-4 mb-4">
+                        <div class="week-nav mb-3">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="changeWeek(-1)">‹</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="changeWeek(1)">›</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="changeWeek(0)">Tuần hiện tại</button>
+                                <span class="badge text-bg-light border text-dark fw-semibold px-3 py-2" id="weekLabel">Đang tải...</span>
+                            </div>
+
+                            <div class="week-legend">
+                                <span class="legend-item"><span class="legend-dot dot-morning"></span>Sáng 7–12h</span>
+                                <span class="legend-item"><span class="legend-dot dot-afternoon"></span>Chiều 12–17h</span>
+                                <span class="legend-item"><span class="legend-dot dot-evening"></span>Tối 17–22h</span>
+                            </div>
                         </div>
 
-                        <div class="col-md-3">
-                            <button class="btn btn-primary w-100" onclick="loadSchedule()">Xem lịch làm</button>
+                        <div class="table-responsive">
+                            <table class="table schedule-table table-bordered align-middle">
+                                <thead id="weekHeader"></thead>
+                                <tbody id="weekBody">
+                                    <tr><td colspan="8" class="text-center schedule-empty">Đang tải...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
 
-                <div class="card-ui p-4 mb-4">
-                    <h5 class="mb-3">Thêm ca làm</h5>
-                    <form id="scheduleForm" class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Ngày làm</label>
-                            <input type="date" class="form-control" id="workDate" required>
+                <div class="tab-panel" id="attendanceTab">
+                    <div class="attendance-grid mb-3">
+                        <div class="attendance-card">
+                            <h6>Thống kê tuần</h6>
+                            <div class="attendance-summary">
+                                <div class="mini-stat">
+                                    <div class="num" id="attTotalShifts">0</div>
+                                    <div class="text">Tổng ca</div>
+                                </div>
+                                <div class="mini-stat">
+                                    <div class="num text-warning" id="attMorning">0</div>
+                                    <div class="text">Ca sáng</div>
+                                </div>
+                                <div class="mini-stat">
+                                    <div class="num text-primary" id="attAfternoon">0</div>
+                                    <div class="text">Ca chiều</div>
+                                </div>
+                                <div class="mini-stat">
+                                    <div class="num text-purple" id="attEvening">0</div>
+                                    <div class="text">Ca tối</div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Ca làm</label>
-                            <select class="form-select" id="shift" required>
-                                <option value="Sáng">Sáng</option>
-                                <option value="Chiều">Chiều</option>
-                                <option value="Tối">Tối</option>
-                            </select>
+                        <div class="attendance-card">
+                            <h6>Tuần đang xem</h6>
+                            <div class="small text-muted mb-2" id="attendanceWeekLabel">---</div>
+                            <div class="small">
+                                <div class="d-flex justify-content-between py-1 border-bottom"><span>Nhân viên</span><strong id="attEmployees">0</strong></div>
+                                <div class="d-flex justify-content-between py-1 border-bottom"><span>Ca sáng</span><strong id="attCountMorning">0</strong></div>
+                                <div class="d-flex justify-content-between py-1 border-bottom"><span>Ca chiều</span><strong id="attCountAfternoon">0</strong></div>
+                                <div class="d-flex justify-content-between py-1"><span>Ca tối</span><strong id="attCountEvening">0</strong></div>
+                            </div>
                         </div>
+                    </div>
 
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100">Lưu ca làm</button>
+                    <div class="card-ui p-3 p-lg-4">
+                        <h6 class="fw-bold mb-3">Chấm công theo nhân viên</h6>
+                        <div class="table-responsive">
+                            <table class="table attendance-table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Nhân viên</th>
+                                        <th class="text-center">Sáng</th>
+                                        <th class="text-center">Chiều</th>
+                                        <th class="text-center">Tối</th>
+                                        <th class="text-center">Tổng</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendanceBody">
+                                    <tr><td colspan="5" class="text-center text-muted py-4">Đang tải...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
-                    </form>
+                    </div>
                 </div>
+                <div class="tab-panel" id="historyTab">
+                    <div class="card-ui p-3 p-lg-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                            <h6 class="fw-bold mb-0">Lịch sử đăng ký ca</h6>
+                            <div class="text-muted small" id="historyCount">0 bản ghi</div>
+                        </div>
 
-                <div class="table-responsive table-modern">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Ngày</th>
-                                <th>Ca</th>
-                                <th>Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody id="scheduleTableBody">
-                            <tr><td colspan="3" class="text-center py-4 text-muted">Chưa chọn nhân viên</td></tr>
-                        </tbody>
-                    </table>
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="historySearch" placeholder="Tìm theo tên nhân viên...">
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Ngày làm</th>
+                                        <th>Nhân viên</th>
+                                        <th>Ca</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyBody">
+                                    <tr><td colspan="4" class="text-center text-muted py-4">Đang tải...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </main>
+        </div>
+    </div>
+
+    <div class="modal fade" id="caModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content" style="border-radius:18px;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="caModalTitle">Thêm ca làm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editId">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nhân viên</label>
+                        <select class="form-select" id="modalNhanVien"></select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ngày làm</label>
+                        <input type="date" class="form-control" id="modalNgay">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ca làm</label>
+                        <select class="form-select" id="modalCa">
+                            <option value="Sáng">Sáng (07:00 - 12:00)</option>
+                            <option value="Chiều">Chiều (12:00 - 17:00)</option>
+                            <option value="Tối">Tối (17:00 - 22:00)</option>
+                        </select>
+                    </div>
+
+                    <div class="alert alert-warning py-2 small mb-0">
+                        Mỗi nhân viên chỉ được 1 ca cho mỗi ngày và mỗi loại ca không được trùng.
+                    </div>
+
+                    <div id="modalAlertBox" class="alert d-none py-2 small mt-3 mb-0"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button class="btn btn-primary" onclick="saveCa()">Lưu</button>
+                </div>
+            </div>
         </div>
     </div>
 

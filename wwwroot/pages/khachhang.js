@@ -40,7 +40,7 @@ async function createCustomer() {
     const sdtKH = document.getElementById("sdtKH").value.trim();
 
     if (!tenKH || !sdtKH) {
-        alert("Vui lòng nhập đầy đủ tên và số điện thoại!");
+        showCustomerAlert("warning", "Vui lòng nhập đầy đủ tên và số điện thoại!");
         return;
     }
 
@@ -58,11 +58,25 @@ async function createCustomer() {
 
         if (res.ok) {
             document.getElementById("formKhachHang").reset();
-            await loadCustomerList();
+            await loadCustomerList(); 
+            showCustomerAlert("success", "Thêm khách hàng thành công!");
         } else {
             alert("Thêm khách hàng thất bại!");
         }
     } catch (error) {
         console.error("Lỗi thêm khách hàng:", error);
     }
+}
+
+function showCustomerAlert(type, msg) {
+    const el = document.getElementById("customerAlert");
+    if (!el) return;
+
+    el.className = `alert alert-${type} py-2 mb-3`;
+    el.textContent = msg;
+    el.classList.remove("d-none");
+
+    setTimeout(() => {
+        el.classList.add("d-none");
+    }, 3000);
 }

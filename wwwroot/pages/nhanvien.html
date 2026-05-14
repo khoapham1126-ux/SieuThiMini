@@ -22,11 +22,16 @@
                 <li class="nav-item"><a class="nav-link" href="tonkho.html">Tồn kho</a></li>
                 <li class="nav-item"><a class="nav-link" href="phieunhap.html">Nhập hàng</a></li>
                 <li class="nav-item"><a class="nav-link" href="sanpham.html">Sản phẩm</a></li>
-                <li class="nav-item"><a class="nav-link active" href="nhanvien.html">Nhân viên</a></li>
                 <li class="nav-item"><a class="nav-link" href="khachhang.html">Khách hàng</a></li>
                 <li class="nav-item"><a class="nav-link" href="nhacc.html">Nhà cung cấp</a></li>
                 <li class="nav-item"><a class="nav-link" href="canhbao.html">Cảnh báo</a></li>
-                <li class="nav-item"><a class="nav-link" href="baocao.html">Báo cáo</a></li>
+                <li class="nav-item d-none role-manager-only">
+                    <a class="nav-link active" href="nhanvien.html">Nhân viên</a>
+                </li>
+                <li class="nav-item d-none role-manager-only">
+                    <a class="nav-link" href="baocao.html">Báo cáo</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="lichlam.html">Lịch Làm</a></li>
                 <li class="nav-item mt-2"><a class="nav-link text-danger" href="#" onclick="logout()">Đăng xuất</a></li>
             </ul>
         </aside>
@@ -35,7 +40,7 @@
             <header class="topbar d-flex justify-content-between align-items-center">
                 <div>
                     <h5>Quản lý nhân viên</h5>
-                    <div class="text-muted small">Thêm, sửa, xem danh sách nhân viên</div>
+                    <div class="text-muted small">Thêm, sửa, xoá và xem danh sách nhân viên</div>
                 </div>
                 <div class="user-chip">
                     <div class="avatar" id="userAvatar">K</div>
@@ -49,10 +54,10 @@
             <main class="page-content">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h3 class="mb-0">Danh sách nhân viên</h3>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#employeeModal" onclick="openAddEmployee()">+ Thêm nhân viên</button>
+                    <button class="btn btn-primary role-manager-only" data-bs-toggle="modal" data-bs-target="#employeeModal" onclick="openAddEmployee()">+ Thêm nhân viên</button>
                 </div>
 
-                <div id="employeeAlert" class="alert alert-danger d-none"></div>
+                <div id="employeeAlert" class="alert d-none"></div>
 
                 <div class="table-responsive table-modern">
                     <table class="table table-hover align-middle mb-0">
@@ -99,7 +104,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">Mật khẩu</label>
-                            <input type="password" class="form-control" id="passWord">
+                            <input type="password" class="form-control" id="passWord" placeholder="Để trống nếu không đổi mật khẩu">
                         </div>
 
                         <div class="mb-3">
