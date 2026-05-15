@@ -481,7 +481,6 @@ function clearCart() {
     if (cart.length === 0) return;
     if (!confirm("Bạn có chắc muốn xoá toàn bộ giỏ hàng?")) return;
     cart = [];
-    appliedCoupon = null;
     renderCart();
 }
 
@@ -524,17 +523,13 @@ function openCheckoutModal() {
     const subtotal = cart.reduce((s, i) => s + i.sanPham.giaBan * i.soLuong, 0);
     const afterProductDiscount = cart.reduce((s, i) => s + i.giaThucTe * i.soLuong, 0);
     const productDiscount = subtotal - afterProductDiscount;
-    const couponDiscount = appliedCoupon
-        ? Math.round(afterProductDiscount * appliedCoupon.phanTramGiam / 100)
-        : 0;
     const pointDiscount = usedPoints * 70;
-    const total = Math.max(0, afterProductDiscount - couponDiscount - pointDiscount);
+    const total = Math.max(0, afterProductDiscount - pointDiscount);
 
     document.getElementById("receiptItems").innerHTML = cart.map(item => `
         <div class="receipt-item">
             <span>
                 ${item.sanPham.tenSanPham}
-                ${item.khuyenMai ? `<span class="discount-badge">-${item.khuyenMai.phanTramGiam}%</span>` : ""}
                 <span class="text-muted">×${item.soLuong}</span>
             </span>
             <span class="fw-semibold">${formatCurrency(item.giaThucTe * item.soLuong)}</span>
@@ -550,16 +545,6 @@ function openCheckoutModal() {
         document.getElementById("modalDiscount").textContent = `- ${formatCurrency(productDiscount)}`;
     } else {
         discRow.classList.add("d-none");
-    }
-
-    const couponRow = document.getElementById("modalCouponRow");
-    if (couponRow) {
-        if (couponDiscount > 0) {
-            couponRow.classList.remove("d-none");
-            document.getElementById("modalCouponDiscount").textContent = `- ${formatCurrency(couponDiscount)} (${appliedCoupon.ten})`;
-        } else {
-            couponRow.classList.add("d-none");
-        }
     }
 
     const pointRow = document.getElementById("modalPointRow");
@@ -578,7 +563,6 @@ function openCheckoutModal() {
     document.getElementById("changeDisplay").className = "change-display";
     checkoutModal.show();
 }
-
 function selectPayment(method, total) {
     selectedPayment = method;
 
@@ -769,15 +753,8 @@ async function confirmCheckout() {
         showCheckoutSuccess(donHang.id, total, phuongThucLabel);
 
         cart = [];
-        appliedCoupon = null;
         usedPoints = 0;
         selectedCustomerData = null;
-
-        const maInput = document.getElementById("maKhuyenMaiInput");
-        if (maInput) maInput.value = "";
-
-        const couponResult = document.getElementById("couponResult");
-        if (couponResult) couponResult.classList.add("d-none");
 
         const customerInput = document.getElementById("customerSearchInput");
         if (customerInput) customerInput.value = "";
